@@ -330,6 +330,7 @@ tmux_conf_copy_to_os_clipboard=true
 set -g history-limit 10000
 
 unbind -n C-l
+unbind -n C-c
 bind C-x setw synchronize-panes
 bind C-k send-keys C-l \; run 'sleep 0.1' \; clear-history
 
