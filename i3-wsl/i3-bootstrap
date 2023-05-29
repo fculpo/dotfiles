@@ -1,6 +1,0 @@
-#! /bin/bash
-
-sudo apt update && sudo apt install python3-pip libssl-dev
-pip3 install --user ansible
-
-ansible-playbook ./bootstrap.yaml

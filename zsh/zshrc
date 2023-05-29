@@ -1,3 +1,10 @@
+XDG_CONFIG_HOME="$HOME/.config"
+XDG_DATA_HOME="$XDG_CONFIG_HOME/local/share"
+XDG_CACHE_HOME="$XDG_CONFIG_HOME/cache"
+
+EDITOR="vim"
+VISUAL="vim"
+
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -5,53 +12,107 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
+# BEGIN Zim
+ZIM_HOME=~/.zim
+# Download zimfw plugin manager if missing.
+if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
+  curl -fsSL --create-dirs -o ${ZIM_HOME}/zimfw.zsh \
+      https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
+fi
+# Install missing modules, and update ${ZIM_HOME}/init.zsh if missing or outdated.
+if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZDOTDIR:-${HOME}}/.zimrc ]]; then
+  source ${ZIM_HOME}/zimfw.zsh init -q
+fi
+# Initialize modules.
+source ${ZIM_HOME}/init.zsh
+# END Zim
+
 # History
 HISTFILE=~/.zsh_history
 HISTFILESIZE=1000000000
 HISTSIZE=1000000000
-HISTTIMEFORMAT="[%F %T] "
+#HISTTIMEFORMAT="[%F %T] "
 
-setopt inc_append_history
+unsetopt SHARE_HISTORY
+unsetopt BEEP
+unsetopt MENU_COMPLETE     # Do not autoselect the first completion entry.
+unsetopt CASE_GLOB         # Case-insensitive completion
+unsetopt correct
+unsetopt correct_all
+
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_REDUCE_BLANKS
+setopt HIST_SAVE_NO_DUPS
 setopt HIST_FIND_NO_DUPS
 setopt EXTENDED_HISTORY
-setopt HIST_SAVE_NO_DUPS # Do not write a duplicate event to the history file.
-
-setopt notify
-unsetopt beep
-
-zstyle :compinstall filename '/Users/fculpo/.zshrc'
+setopt INC_APPEND_HISTORY
+setopt AUTO_CD
+setopt AUTO_LIST
+setopt AUTO_MENU
+setopt ALWAYS_TO_END
+setopt NOTIFY
 setopt COMPLETE_IN_WORD    # Complete from both ends of a word.
-setopt ALWAYS_TO_END       # Move cursor to the end of a completed word.
 setopt PATH_DIRS           # Perform path search even on command names with slashes.
-setopt AUTO_MENU           # Show completion menu on a successive tab press.
-setopt AUTO_LIST           # Automatically list choices on ambiguous completion.
 setopt AUTO_PARAM_SLASH    # If completed parameter is a directory, add a trailing slash.
 setopt EXTENDED_GLOB       # Needed for file modification glob modifiers with compinit
-unsetopt MENU_COMPLETE     # Do not autoselect the first completion entry.
-# unsetopt FLOW_CONTROL      # Disable start/stop characters in shell editor.
+setopt INTERACTIVECOMMENTS
+setopt listpacked
+setopt longlistjobs
+setopt noflowcontrol
 
-# Case-insensitive completion
+type brew &>/dev/null && FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
+
+zmodload -i zsh/complist
+autoload -Uz compinit; compinit
+
+zstyle :compinstall filename '$HOME/.zshrc'
+zstyle ':completion:*' verbose yes
+zstyle ':completion:*' menu select=0 # interactive  #menu select=0 interactive #search
+zstyle ':completion:::::' completer _extensions _complete _approximate
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
-unsetopt CASE_GLOB
+
+# Complete the alias when _expand_alias is used as a function
+zstyle ':completion:*' complete true
+zle -C alias-expension complete-word _generic
+bindkey '^xa' alias-expension
+zstyle ':completion:alias-expension:*' completer _expand_alias
+
+# Autocomplete options for cd instead of directory stack
+zstyle ':completion:*' complete-options true
+zstyle ':completion:*' file-sort modification
+
+# Use cache for commands using cache
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path "$XDG_CACHE_HOME/zsh/.zcompcache"
+
+zstyle ':completion:*:*:*:*:corrections' format '%F{yellow}!- %d (errors: %e) -!%f'
+zstyle ':completion:*:*:*:*:descriptions' format '%F{blue}-- %D %d --%f'
+zstyle ':completion:*:*:*:*:messages' format ' %F{purple} -- %d --%f'
+zstyle ':completion:*:*:*:*:warnings' format ' %F{red}-- no matches found --%f'
+#zstyle ':completion:*:default' list-prompt '%S%M matches%s'
+# Colors for files and directory
+zstyle ':completion:*:*:*:*:default' list-colors ${(s.:.)LS_COLORS}
+
+# Only display some tags for the command cd
+zstyle ':completion:*:*:cd:*' tag-order local-directories directory-stack path-directories
 
 # Group matches and describe.
-zstyle ':completion:*:*:*:*:*' menu select
 zstyle ':completion:*:matches' group 'yes'
 zstyle ':completion:*:options' description 'yes'
 zstyle ':completion:*:options' auto-description '%d'
-zstyle ':completion:*:corrections' format ' %F{green}-- %d (errors: %e) --%f'
-zstyle ':completion:*:descriptions' format ' %F{green}-- %d --%f'
-zstyle ':completion:*:messages' format ' %F{purple} -- %d --%f'
-zstyle ':completion:*:warnings' format ' %F{red}-- no matches found --%f'
-zstyle ':completion:*:default' list-prompt '%S%M matches%s'
-zstyle ':completion:*' format ' %F{yellow}-- %d --%f'
-zstyle ':completion:*' group-name ''
-zstyle ':completion:*' verbose yes
+#zstyle ':completion:*' format ' %F{yellow}-- %d --%f'
 
-# Fuzzy match mistyped completions.
-zstyle ':completion:*' completer _complete _match _approximate
-zstyle ':completion:*:match:*' original only
-zstyle ':completion:*:approximate:*' max-errors 1 numeric
+# Required for completion to be in good groups (named after the tags)
+zstyle ':completion:*' group-name ''
+
+zstyle ':completion:*:*:-command-:*:*' group-order aliases builtins functions commands
+
+# See ZSHCOMPWID "completion matching control"
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+
+zstyle ':completion:*' keep-prefix true
+
+zstyle -e ':completion:*:(ssh|scp|sftp|rsh|rsync):hosts' hosts 'reply=(${=${${(f)"$(cat {/etc/ssh_,~/.ssh/known_}hosts(|2)(N) /dev/null)"}%%[# ]*}//,/ })'
 
 # Directories
 zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
@@ -73,66 +134,29 @@ zstyle ':completion:*:*:*:users' ignored-patterns \
 # Load aliases
 source $HOME/.dotfiles/zsh/aliases.zsh
 
-### Zplug start
-source ~/.zplug/init.zsh
-
-# Plugins
-zplug "plugins/osx", from:oh-my-zsh
-zplug "clvv/fasd"
-zplug "junegunn/fzf"
-zplug 'wfxr/forgit'
-zplug "agkozak/zsh-z"
-zplug "plugins/pass", from:oh-my-zsh
-zplug "zsh-users/zsh-completions"
-zplug "zsh-users/zsh-autosuggestions"
-zplug "zsh-users/zsh-syntax-highlighting"
-zplug "zsh-users/zsh-history-substring-search"
-zplug "romkatv/powerlevel10k", as:theme, depth:1
-
-# Install plugins if there are plugins that have not been installed
-if ! zplug check --verbose; then
-    printf "Install? [y/N]: "
-    if read -q; then
-        echo; zplug install
-    fi
-fi
-
-
-# Then, source plugins and add commands to $PATH
-zplug load
-
-### Zplug end
-
-bindkey -v
+bindkey -e
 
 # Gray color for autosuggestions
 ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=247'
 
 # Colorizes ls on macOS
 export CLICOLOR=1
+export GREP_COLORS='1;35;40'
 
 # Pagination in autocompletion
-#export PAGER="less"
+export PAGER="less"
 
-bindkey "^[[3~" delete-char
+# bindkey "^[[3~" delete-char
 bindkey "^[[1;2D" backward-word # Shift <-
 bindkey "^[[1;2C" forward-word  # Shift ->
-
-bindkey "^f" beginning-of-line
-bindkey "^g" end-of-line
-bindkey "^k" forward-word
-bindkey "^j" backward-word
-bindkey "^e" kill-whole-line
 
 # zsh-users/zsh-history-substring-search
 bindkey '^[[A' history-substring-search-up
 bindkey '^[[B' history-substring-search-down
-bindkey -M vicmd 'k' history-substring-search-up
-bindkey -M vicmd 'j' history-substring-search-down
 
 autoload -z edit-command-line
 zle -N edit-command-line
-bindkey '^x^e' edit-command-line
+bindkey '^xe' edit-command-line
 
 # Load all files from zshrc.d directory
 if [ -d $HOME/zshrc.d ]; then
@@ -141,21 +165,20 @@ if [ -d $HOME/zshrc.d ]; then
     done
 fi
 
-export PATH="$HOME/.local/bin/:$PATH"
-export PATH="/usr/local/sbin:$PATH"
-export PATH="/usr/local/opt/openjdk@11/bin:$PATH"
-export PATH="/usr/local/opt/gnu-getopt/bin:$PATH"
-export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
-export PATH="/usr/local/opt/openssl@3/bin:$PATH"
-export PATH="/usr/local/opt/libpq/bin:$PATH"
+export PATH="$HOME/.local/bin/:${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+command -v brew >/dev/null && export PATH="/opt/homebrew/bin:$PATH"
+command -v flux >/dev/null && . <(flux completion zsh)
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-autoload -Uz compinit; compinit
-autoload -U +X bashcompinit && bashcompinit
-complete -o nospace -C /usr/local/bin/terraform terraform
+#command -v kubectl >/dev/null && . <(kubectl completion zsh)
+#compdef __start_kubectl k
 
-. /usr/local/opt/asdf/asdf.sh
+autoload -U +X bashcompinit && bashcompinit
+command -v terraform >/dev/null && complete -o nospace -C terraform terraform
+
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

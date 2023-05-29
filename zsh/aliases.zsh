@@ -1,45 +1,34 @@
 alias crypto='curl rate.sx' # Get crypto prices
-alias _='sudo'
-
-alias compfix="compaudit | xargs chmod g-w && compaudit | xargs chown -R '$(whoami)'"
-
-# ls
-alias ll="ls -l"
-alias la="ls -la"
 
 # wget sucks with certificates. Let's keep it simple.
 alias wget="curl -O"
 
-alias k="kubectl"
-alias kg="kubectl get"
-alias kgp="kubectl get pods"
-alias kgpw="kubectl get pods -owide"
-alias kd="kubectl describe"
-alias kga="kubectl get all"
+alias tf="terraform"
 
-alias vi="vim"
-
-# Git
 alias g="git"
-alias gco="git checkout"
-alias gp="git push"
-alias gpf="git push --force-with-lease"
 alias gs="git status -sb"
-alias gpl="git pull"
-alias gl="git log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%C(bold blue)<%an>%Creset' --abbrev-commit"
-alias gr="git rebase -i HEAD~15"
 
-# easier navigation
-alias ..="cd .."
-alias ...="cd ../.."
-alias ....="cd ../../.."
-alias .....="cd ../../../.."
+#alias k="kubectl"
+alias vi="vim"
+alias kx="kubectx"
+alias kn="kubens"
 
-alias cpu='top -o cpu'   # CPU
-alias mem='top -o rsize' # Memory
+alias r="source ~/.zshrc"
 
-# Edit configs
-alias essh='vim ~/.ssh/config' # ssh config
+alias myip='curl http://ipecho.net/plain; echo'
 
-alias cat="bat"
-alias c="cat"
+# Alias Screensaver on macOS High Sierra as afk. My Mac locks when it starts.
+if [[ -f "/System/Library/CoreServices/ScreenSaverEngine.app/Contents/MacOS/ScreenSaverEngine" ]]; then
+    alias afk="open -a ScreenSaverEngine"
+fi
+
+if hash exa 2>/dev/null; then
+  alias ls='exa'                                                          # ls
+  alias l='exa -lbF --git'                                                # list, size, type, git
+  alias ll='exa -lbGF --git'                                             # long list
+  alias llm='exa -lbGd --git --sort=modified'                            # long list, modified date sort
+  alias la='exa -lbhHigUmuSa --time-style=long-iso --git --color-scale'  # all list
+  alias lx='exa -lbhHigUmuSa@ --time-style=long-iso --git --color-scale' # all + extended list
+  alias lS='exa -1'                                                              # one column, just names
+  alias lt='exa --tree --level=2'                                         # tree
+fi

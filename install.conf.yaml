@@ -7,10 +7,11 @@
 - create:
     - ~/.config/skhd
     - ~/.config/yabai
+    - ~/.zim
 
 - link:
     ~/.zshrc: zsh/zshrc
-    ~/.zshenv: zsh/zshenv
+    ~/.zimrc: zsh/zimrc
     ~/.tmux.conf.local: tmux/tmux.conf.local
     ~/.vimrc: vim/vimrc
     ~/.config/skhd/skhdrc: config/skhd/skhdrc
@@ -31,10 +32,6 @@
 #       command: bash -c "if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm; fi;"
 #     - description: Install Oh My Tmux!
 #       command: bash -c "if [ ! -d "$HOME/.tmux-config" ]; then git clone https://github.com/gpakosz/.tmux.git ~/.tmux-config; fi; ln -s -f ~/.tmux-config/.tmux.conf ~/.tmux.conf"
-#     - description: Install fisher
-#       command: curl https://git.io/fisher --create-dirs -sLo ~/.config/fish/functions/fisher.fish
-#     - description: Fisher
-#       command: fish -c "fisher"
 #     - description: Install rust
 #       command: bash -c "if ! command -v $HOME/.cargo/bin/cargo; then echo 1 | curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y; fi;"
 #     - description: Install bat
