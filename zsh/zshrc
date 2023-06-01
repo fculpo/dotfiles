@@ -177,6 +177,9 @@ fi
 
 export PATH="$HOME/.local/bin/:${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
+GPG_TTY=$(tty)
+export GPG_TTY
+
 command -v brew >/dev/null && export PATH="/opt/homebrew/bin:$PATH"
 command -v flux >/dev/null && . <(flux completion zsh)
 
