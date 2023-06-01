@@ -12,21 +12,6 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# BEGIN Zim
-ZIM_HOME=~/.zim
-# Download zimfw plugin manager if missing.
-if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
-  curl -fsSL --create-dirs -o ${ZIM_HOME}/zimfw.zsh \
-      https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
-fi
-# Install missing modules, and update ${ZIM_HOME}/init.zsh if missing or outdated.
-if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZDOTDIR:-${HOME}}/.zimrc ]]; then
-  source ${ZIM_HOME}/zimfw.zsh init -q
-fi
-# Initialize modules.
-source ${ZIM_HOME}/init.zsh
-# END Zim
-
 # History
 HISTFILE=~/.zsh_history
 HISTFILESIZE=1000000000
@@ -37,8 +22,8 @@ unsetopt SHARE_HISTORY
 unsetopt BEEP
 unsetopt MENU_COMPLETE     # Do not autoselect the first completion entry.
 unsetopt CASE_GLOB         # Case-insensitive completion
-unsetopt correct
-unsetopt correct_all
+unsetopt CORRECT
+unsetopt CORRECT_ALL
 
 setopt HIST_IGNORE_ALL_DUPS
 setopt HIST_REDUCE_BLANKS
@@ -46,6 +31,7 @@ setopt HIST_SAVE_NO_DUPS
 setopt HIST_FIND_NO_DUPS
 setopt EXTENDED_HISTORY
 setopt INC_APPEND_HISTORY
+setopt HIST_VERIFY 
 setopt AUTO_CD
 setopt AUTO_LIST
 setopt AUTO_MENU
@@ -55,17 +41,24 @@ setopt COMPLETE_IN_WORD    # Complete from both ends of a word.
 setopt PATH_DIRS           # Perform path search even on command names with slashes.
 setopt AUTO_PARAM_SLASH    # If completed parameter is a directory, add a trailing slash.
 setopt EXTENDED_GLOB       # Needed for file modification glob modifiers with compinit
+setopt GLOB_DOTS
 setopt INTERACTIVECOMMENTS
-setopt listpacked
-setopt longlistjobs
-setopt noflowcontrol
+setopt LIST_PACKED
+setopt LONG_LIST_JOBS
+setopt NO_FLOW_CONTROL
+setopt NONOMATCH
+setopt PUSHD_IGNORE_DUPS
 
 type brew &>/dev/null && FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
+
+# Remove / and # from WORDCHARS
+WORDCHARS=${${WORDCHARS:s#/#}:s,#,}
 
 zmodload -i zsh/complist
 autoload -Uz compinit; compinit
 
 zstyle :compinstall filename '$HOME/.zshrc'
+
 zstyle ':completion:*' verbose yes
 zstyle ':completion:*' menu select=0 # interactive  #menu select=0 interactive #search
 zstyle ':completion:::::' completer _extensions _complete _approximate
@@ -130,6 +123,23 @@ zstyle ':completion:*:*:*:users' ignored-patterns \
   named netdump news nfsnobody nobody nscd ntp nut nx openvpn \
   operator pcap postfix postgres privoxy pulse pvm quagga radvd \
   rpc rpcuser rpm shutdown squid sshd sync uucp vcsa xfs '_*'
+
+zstyle ':zim:input' double-dot-expand yes
+
+# BEGIN Zim
+ZIM_HOME=~/.zim
+# Download zimfw plugin manager if missing.
+if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
+  curl -fsSL --create-dirs -o ${ZIM_HOME}/zimfw.zsh \
+      https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
+fi
+# Install missing modules, and update ${ZIM_HOME}/init.zsh if missing or outdated.
+if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZDOTDIR:-${HOME}}/.zimrc ]]; then
+  source ${ZIM_HOME}/zimfw.zsh init -q
+fi
+# Initialize modules.
+source ${ZIM_HOME}/init.zsh
+# END Zim
 
 # Load aliases
 source $HOME/.dotfiles/zsh/aliases.zsh
