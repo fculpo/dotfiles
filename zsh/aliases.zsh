@@ -15,9 +15,6 @@ alias nowtime=now
 alias nowdate='date +"%d-%m-%Y"'
 alias ports='netstat -tulanp'
 
-# do not delete / or prompt if deleting more than 3 files at a time #
-alias rm='rm -I --preserve-root'
-
 # confirmation #
 alias mv='mv -i'
 alias cp='cp -i'
@@ -51,15 +48,15 @@ fi
 
 [[ "$(command -v htop)" ]] && alias top="htop"
 
-if hash exa 2>/dev/null; then
-  alias ls='exa'                                                          # ls
-  alias l='exa -lbF --git'                                                # list, size, type, git
-  alias ll='exa -lbGF --git'                                             # long list
-  alias llm='exa -lbGd --git --sort=modified'                            # long list, modified date sort
-  alias la='exa -lbhHigUmuSa --time-style=long-iso --git --color-scale'  # all list
-  alias lx='exa -lbhHigUmuSa@ --time-style=long-iso --git --color-scale' # all + extended list
-  alias lS='exa -1'                                                              # one column, just names
-  alias lt='exa --tree --level=2'                                         # tree
+if hash eza 2>/dev/null; then
+  alias ls='eza'                                                          # ls
+  alias l='eza -lbF --git'                                                # list, size, type, git
+  alias ll='eza -lbGF --git'                                             # long list
+  alias llm='eza -lbGd --git --sort=modified'                            # long list, modified date sort
+  alias la='eza -lbhHigUmuSa --time-style=long-iso --git --color-scale'  # all list
+  alias lx='eza -lbhHigUmuSa@ --time-style=long-iso --git --color-scale' # all + extended list
+  alias lS='eza -1'                                                              # one column, just names
+  alias lt='eza --tree --level=2'                                         # tree
 fi
 
 if exa --icons &>/dev/null; then

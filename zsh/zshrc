@@ -180,18 +180,34 @@ export PATH="$HOME/.local/bin/:${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 GPG_TTY=$(tty)
 export GPG_TTY
 
-command -v brew >/dev/null && export PATH="/opt/homebrew/bin:$PATH"
-command -v flux >/dev/null && . <(flux completion zsh)
-
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 #command -v kubectl >/dev/null && . <(kubectl completion zsh)
 #compdef __start_kubectl k
 
 autoload -U +X bashcompinit && bashcompinit
+
 command -v terraform >/dev/null && complete -o nospace -C terraform terraform
+command -v tk >/dev/null && complete -o nospace -C /opt/homebrew/bin/tk tk
+command -v brew >/dev/null && export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH"
+command -v flux >/dev/null && . <(flux completion zsh)
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+if command -v nvm 2>&1 >/dev/null
+then
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "/opt/homebrew/opt/nvm/nvm.sh" ] && \. "/opt/homebrew/opt/nvm/nvm.sh"  # This loads nvm
+  [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+fi
+
+if command -v pyenv 2>&1 >/dev/null
+then
+  export PYENV_ROOT="$HOME/.pyenv"
+  export PATH="$PYENV_ROOT/bin:$PATH"
+  eval "$(pyenv init -)"
+  eval "$(pyenv virtualenv-init -)"
+fi
