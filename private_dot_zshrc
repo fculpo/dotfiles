@@ -1,0 +1,313 @@
+# Start configuration added by Zim install {{{
+#
+# User configuration sourced by interactive shells
+#
+
+# -----------------
+# Zsh configuration
+# -----------------
+
+#
+# History
+#
+
+# Remove older command from the history if a duplicate is to be added.
+setopt HIST_IGNORE_ALL_DUPS
+
+#
+# Input/output
+#
+
+# Set editor default keymap to emacs (`-e`) or vi (`-v`)
+bindkey -e
+
+# Prompt for spelling correction of commands.
+#setopt CORRECT
+
+# Customize spelling correction prompt.
+#SPROMPT='zsh: correct %F{red}%R%f to %F{green}%r%f [nyae]? '
+
+# Remove path separator from WORDCHARS.
+WORDCHARS=${WORDCHARS//[\/]}
+
+# -----------------
+# Zim configuration
+# -----------------
+
+# Use degit instead of git as the default tool to install and update modules.
+#zstyle ':zim:zmodule' use 'degit'
+
+# --------------------
+# Module configuration
+# --------------------
+
+#
+# git
+#
+
+# Set a custom prefix for the generated aliases. The default prefix is 'G'.
+#zstyle ':zim:git' aliases-prefix 'g'
+
+#
+# input
+#
+
+# Append `../` to your input for each `.` you type after an initial `..`
+#zstyle ':zim:input' double-dot-expand yes
+
+#
+# termtitle
+#
+
+# Set a custom terminal title format using prompt expansion escape sequences.
+# See http://zsh.sourceforge.net/Doc/Release/Prompt-Expansion.html#Simple-Prompt-Escapes
+# If none is provided, the default '%n@%m: %~' is used.
+#zstyle ':zim:termtitle' format '%1~'
+
+#
+# zsh-autosuggestions
+#
+
+# Disable automatic widget re-binding on each precmd. This can be set when
+# zsh-users/zsh-autosuggestions is the last module in your ~/.zimrc.
+ZSH_AUTOSUGGEST_MANUAL_REBIND=1
+
+# Customize the style that the suggestions are shown with.
+# See https://github.com/zsh-users/zsh-autosuggestions/blob/master/README.md#suggestion-highlight-style
+#ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=242'
+
+#
+# zsh-syntax-highlighting
+#
+
+# Set what highlighters will be used.
+# See https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters.md
+ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
+
+# Customize the main highlighter styles.
+# See https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters/main.md#how-to-tweak-it
+typeset -A ZSH_HIGHLIGHT_STYLES
+ZSH_HIGHLIGHT_STYLES[comment]='fg=242'
+
+# ------------------
+# Initialize modules
+# ------------------
+
+ZIM_HOME=${ZDOTDIR:-${HOME}}/.zim
+# Download zimfw plugin manager if missing.
+if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
+  if (( ${+commands[curl]} )); then
+    curl -fsSL --create-dirs -o ${ZIM_HOME}/zimfw.zsh \
+        https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
+  else
+    mkdir -p ${ZIM_HOME} && wget -nv -O ${ZIM_HOME}/zimfw.zsh \
+        https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
+  fi
+fi
+# Install missing modules, and update ${ZIM_HOME}/init.zsh if missing or outdated.
+if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZDOTDIR:-${HOME}}/.zimrc ]]; then
+  source ${ZIM_HOME}/zimfw.zsh init -q
+fi
+# Initialize modules.
+source ${ZIM_HOME}/init.zsh
+
+# ------------------------------
+# Post-init module configuration
+# ------------------------------
+
+#
+# zsh-history-substring-search
+#
+
+zmodload -F zsh/terminfo +p:terminfo
+# Bind ^[[A/^[[B manually so up/down works both before and after zle-line-init
+for key ('^[[A' '^P' ${terminfo[kcuu1]}) bindkey ${key} history-substring-search-up
+for key ('^[[B' '^N' ${terminfo[kcud1]}) bindkey ${key} history-substring-search-down
+for key ('k') bindkey -M vicmd ${key} history-substring-search-up
+for key ('j') bindkey -M vicmd ${key} history-substring-search-down
+unset key
+# }}} End configuration added by Zim install
+
+XDG_CONFIG_HOME="$HOME/.config"
+XDG_DATA_HOME="$XDG_CONFIG_HOME/local/share"
+XDG_CACHE_HOME="$XDG_CONFIG_HOME/cache"
+
+EDITOR="vim"
+VISUAL="vim"
+
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# History
+HISTFILE=~/.zsh_history
+HISTFILESIZE=1000000000
+HISTSIZE=1000000000
+#HISTTIMEFORMAT="[%F %T] "
+
+unsetopt SHARE_HISTORY
+unsetopt BEEP
+unsetopt MENU_COMPLETE     # Do not autoselect the first completion entry.
+unsetopt CASE_GLOB         # Case-insensitive completion
+unsetopt CORRECT
+unsetopt CORRECT_ALL
+
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_REDUCE_BLANKS
+setopt HIST_SAVE_NO_DUPS
+setopt HIST_FIND_NO_DUPS
+setopt EXTENDED_HISTORY
+setopt INC_APPEND_HISTORY
+setopt HIST_VERIFY
+setopt AUTO_CD
+setopt AUTO_LIST
+setopt AUTO_MENU
+setopt ALWAYS_TO_END
+setopt NOTIFY
+setopt COMPLETE_IN_WORD    # Complete from both ends of a word.
+setopt PATH_DIRS           # Perform path search even on command names with slashes.
+setopt AUTO_PARAM_SLASH    # If completed parameter is a directory, add a trailing slash.
+setopt EXTENDED_GLOB       # Needed for file modification glob modifiers with compinit
+setopt GLOB_DOTS
+setopt INTERACTIVECOMMENTS
+setopt LIST_PACKED
+setopt LONG_LIST_JOBS
+setopt NO_FLOW_CONTROL
+setopt NONOMATCH
+setopt PUSHD_IGNORE_DUPS
+
+
+# Remove / and # from WORDCHARS
+WORDCHARS=${${WORDCHARS:s#/#}:s,#,}
+
+zmodload -i zsh/complist
+
+zstyle :compinstall filename '$HOME/.zshrc'
+
+zstyle ':completion:*' verbose yes
+zstyle ':completion:*' menu select=0 # interactive  #menu select=0 interactive #search
+zstyle ':completion:::::' completer _extensions _complete _approximate
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+
+# Complete the alias when _expand_alias is used as a function
+zstyle ':completion:*' complete true
+zle -C alias-expension complete-word _generic
+bindkey '^xa' alias-expension
+zstyle ':completion:alias-expension:*' completer _expand_alias
+
+# Autocomplete options for cd instead of directory stack
+zstyle ':completion:*' complete-options true
+zstyle ':completion:*' file-sort modification
+
+# Use cache for commands using cache
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path "$XDG_CACHE_HOME/zsh/.zcompcache"
+
+zstyle ':completion:*:*:*:*:corrections' format '%F{yellow}!- %d (errors: %e) -!%f'
+zstyle ':completion:*:*:*:*:descriptions' format '%F{blue}-- %D %d --%f'
+zstyle ':completion:*:*:*:*:messages' format ' %F{purple} -- %d --%f'
+zstyle ':completion:*:*:*:*:warnings' format ' %F{red}-- no matches found --%f'
+#zstyle ':completion:*:default' list-prompt '%S%M matches%s'
+# Colors for files and directory
+zstyle ':completion:*:*:*:*:default' list-colors ${(s.:.)LS_COLORS}
+
+# Only display some tags for the command cd
+zstyle ':completion:*:*:cd:*' tag-order local-directories directory-stack path-directories
+
+# Group matches and describe.
+zstyle ':completion:*:matches' group 'yes'
+zstyle ':completion:*:options' description 'yes'
+zstyle ':completion:*:options' auto-description '%d'
+#zstyle ':completion:*' format ' %F{yellow}-- %d --%f'
+
+# Required for completion to be in good groups (named after the tags)
+zstyle ':completion:*' group-name ''
+
+zstyle ':completion:*:*:-command-:*:*' group-order aliases builtins functions commands
+
+# See ZSHCOMPWID "completion matching control"
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+
+zstyle ':completion:*' keep-prefix true
+
+zstyle -e ':completion:*:(ssh|scp|sftp|rsh|rsync):hosts' hosts 'reply=(${=${${(f)"$(cat {/etc/ssh_,~/.ssh/known_}hosts(|2)(N) /dev/null)"}%%[# ]*}//,/ })'
+
+# Directories
+zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
+zstyle ':completion:*:*:cd:*' tag-order local-directories directory-stack path-directories
+zstyle ':completion:*:*:cd:*:directory-stack' menu yes select
+zstyle ':completion:*:-tilde-:*' group-order 'named-directories' 'path-directories' 'users' 'expand'
+zstyle ':completion:*' squeeze-slashes true
+
+# Don't complete uninteresting users...
+zstyle ':completion:*:*:*:users' ignored-patterns \
+  adm amanda apache avahi beaglidx bin cacti canna clamav daemon \
+  dbus distcache docker dovecot fax ftp games gdm gkrellmd gopher \
+  hacluster haldaemon halt hsqldb ident junkbust ldap lp mail \
+  mailman mailnull mldonkey mysql nagios \
+  named netdump news nfsnobody nobody nscd ntp nut nx openvpn \
+  operator pcap postfix postgres privoxy pulse pvm quagga radvd \
+  rpc rpcuser rpm shutdown squid sshd sync uucp vcsa xfs '_*'
+
+zstyle ':zim:input' double-dot-expand yes
+
+# Load aliases
+source $HOME/.dotfiles/zsh/aliases.zsh
+
+# Gray color for autosuggestions
+#ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=247'
+
+# Colorizes ls on macOS
+export CLICOLOR=1
+export GREP_COLORS='1;35;40'
+
+# Pagination in autocompletion
+export PAGER="less"
+
+# bindkey "^[[3~" delete-char
+bindkey "^[[1;2D" backward-word # Shift <-
+bindkey "^[[1;2C" forward-word  # Shift ->
+
+# zsh-users/zsh-history-substring-search
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+
+autoload -z edit-command-line
+zle -N edit-command-line
+bindkey '^xe' edit-command-line
+
+# Load all files from zshrc.d directory
+if [ -d $HOME/zshrc.d ]; then
+    for file in $HOME/zshrc.d/*.zsh; do
+        source $file
+    done
+fi
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+export PATH="$HOME/go/bin:$HOME/.local/bin/:${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+
+GPG_TTY=$(tty)
+export GPG_TTY
+
+type brew &>/dev/null && FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
+command -v brew >/dev/null && export PATH="/opt/homebrew/bin:$PATH"
+command -v flux >/dev/null && . <(flux completion zsh)
+command -v kubectl >/dev/null && . <(kubectl completion zsh)
+compdef __start_kubectl k
+command -v tk >/dev/null && complete -o nospace -C /opt/homebrew/bin/tk tk
+command -v terraform >/dev/null && complete -o nospace -C terraform terraform
+autoload -U +X bashcompinit && bashcompinit
+
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+. "$HOME/.asdf/asdf.sh"
+. "$HOME/.zsh.dwx.sh"
+
+export NVM_DIR="$HOME/.nvm"
