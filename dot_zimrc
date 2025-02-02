@@ -1,0 +1,19 @@
+#zmodule zsh-users/zsh-syntax-highlighting
+zmodule zsh-users/zsh-autosuggestions
+zmodule zsh-users/zsh-completions --fpath src
+zmodule romkatv/powerlevel10k --use degit
+zmodule wfxr/forgit
+#zmodule k
+zmodule exa
+#zmodule input
+#zmodule archive
+zmodule joke/zim-yq
+zmodule agkozak/zsh-z
+zmodule ohmyzsh/ohmyzsh --root plugins/pass
+zmodule ohmyzsh/ohmyzsh --root plugins/sudo
+zmodule asdf
+zmodule reegnz/jq-zsh-plugin
+#zmodule MichaelAquilina/zsh-you-should-use
+
+zmodule zdharma-continuum/fast-syntax-highlighting
+zmodule zsh-users/zsh-history-substring-search
