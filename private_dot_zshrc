@@ -255,7 +255,7 @@ zstyle ':completion:*:*:*:users' ignored-patterns \
 zstyle ':zim:input' double-dot-expand yes
 
 # Load aliases
-source $HOME/.dotfiles/zsh/aliases.zsh
+source $HOME/.zsh.d/
 
 # Gray color for autosuggestions
 #ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=247'
@@ -308,6 +308,5 @@ test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 . "$HOME/.asdf/asdf.sh"
-. "$HOME/.zsh.dwx.sh"
 
 export NVM_DIR="$HOME/.nvm"
