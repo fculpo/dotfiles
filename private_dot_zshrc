@@ -128,6 +128,9 @@ for key ('j') bindkey -M vicmd ${key} history-substring-search-down
 unset key
 # }}} End configuration added by Zim install
 
+autoload -U +X bashcompinit && bashcompinit
+autoload -U +X compinit && compinit
+
 XDG_CONFIG_HOME="$HOME/.config"
 XDG_DATA_HOME="$XDG_CONFIG_HOME/local/share"
 XDG_CACHE_HOME="$XDG_CONFIG_HOME/cache"
@@ -254,9 +257,6 @@ zstyle ':completion:*:*:*:users' ignored-patterns \
 
 zstyle ':zim:input' double-dot-expand yes
 
-# Load aliases
-source $HOME/.zsh.d/
-
 # Gray color for autosuggestions
 #ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=247'
 
@@ -280,8 +280,8 @@ zle -N edit-command-line
 bindkey '^xe' edit-command-line
 
 # Load all files from zshrc.d directory
-if [ -d $HOME/zshrc.d ]; then
-    for file in $HOME/zshrc.d/*.zsh; do
+if [ -d $HOME/.zsh.d ]; then
+    for file in $HOME/.zsh.d/*.zsh; do
         source $file
     done
 fi
@@ -297,7 +297,6 @@ type brew &>/dev/null && FPATH="$(brew --prefix)/share/zsh/site-functions:${FPAT
 command -v brew >/dev/null && export PATH="/opt/homebrew/bin:$PATH"
 command -v flux >/dev/null && . <(flux completion zsh)
 command -v kubectl >/dev/null && . <(kubectl completion zsh)
-compdef __start_kubectl k
 command -v tk >/dev/null && complete -o nospace -C /opt/homebrew/bin/tk tk
 command -v terraform >/dev/null && complete -o nospace -C terraform terraform
 autoload -U +X bashcompinit && bashcompinit
@@ -307,6 +306,6 @@ test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-. "$HOME/.asdf/asdf.sh"
+test -e "$HOME/.asdf/asdf.sh" && source "$HOME/.asdf/asdf.sh"
 
 export NVM_DIR="$HOME/.nvm"

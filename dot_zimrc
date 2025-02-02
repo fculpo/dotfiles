@@ -3,10 +3,7 @@ zmodule zsh-users/zsh-autosuggestions
 zmodule zsh-users/zsh-completions --fpath src
 zmodule romkatv/powerlevel10k --use degit
 zmodule wfxr/forgit
-#zmodule k
 zmodule exa
-#zmodule input
-#zmodule archive
 zmodule joke/zim-yq
 zmodule agkozak/zsh-z
 zmodule ohmyzsh/ohmyzsh --root plugins/pass

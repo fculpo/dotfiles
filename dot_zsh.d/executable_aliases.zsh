@@ -28,7 +28,7 @@ alias tf="terraform"
 alias g="git"
 alias gs="git status -sb"
 
-#alias k="kubectl"
+alias k="kubectl"
 alias vi="vim"
 alias kx="kubectx"
 alias kn="kubens"
