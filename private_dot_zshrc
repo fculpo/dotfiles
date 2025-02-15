@@ -146,9 +146,10 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 # History
-HISTFILE=~/.zsh_history
-HISTFILESIZE=1000000000
-HISTSIZE=1000000000
+HISTFILE="$HOME/.zsh_history"
+HISTFILESIZE=10000000
+HISTSIZE=10000000
+SAVEHIST=500000
 #HISTTIMEFORMAT="[%F %T] "
 
 unsetopt SHARE_HISTORY
