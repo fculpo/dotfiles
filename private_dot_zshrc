@@ -3,6 +3,24 @@
 # User configuration sourced by interactive shells
 #
 
+# Optional: Enable startup profiling by setting ZSHRC_PROFILE=1
+# Usage: ZSHRC_PROFILE=1 zsh
+if [[ -n "$ZSHRC_PROFILE" ]]; then
+  zmodload zsh/datetime
+  setopt PROMPT_SUBST
+  __zshrc_profile_start=$EPOCHREALTIME
+
+  __zshrc_profile() {
+    local now=$EPOCHREALTIME
+    local elapsed=$(( (now - __zshrc_profile_time) * 1000 ))
+    printf "%6.2f ms  %s\n" $elapsed "$1" >&2
+    __zshrc_profile_time=$now
+  }
+  __zshrc_profile_time=$__zshrc_profile_start
+else
+  __zshrc_profile() { }
+fi
+
 # -----------------
 # Zsh configuration
 # -----------------
@@ -94,6 +112,8 @@ ZSH_HIGHLIGHT_STYLES[comment]='fg=242'
 # ------------------
 
 ZIM_HOME=${ZDOTDIR:-${HOME}}/.zim
+__zshrc_profile "Pre-init setup"
+
 # Download zimfw plugin manager if missing.
 if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
   if (( ${+commands[curl]} )); then
@@ -110,6 +130,7 @@ if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZDOTDIR:-${HOME}}/.zimrc ]]; then
 fi
 # Initialize modules.
 source ${ZIM_HOME}/init.zsh
+__zshrc_profile "Zim initialization"
 
 # ------------------------------
 # Post-init module configuration
@@ -128,8 +149,20 @@ for key ('j') bindkey -M vicmd ${key} history-substring-search-down
 unset key
 # }}} End configuration added by Zim install
 
+# Optimize compinit by caching - only rebuild once per day
+autoload -Uz compinit
+setopt EXTENDEDGLOB
+for dump in ${ZDOTDIR:-$HOME}/.zcompdump(#qNmh-24); do
+  compinit
+  if [[ -s "$dump" && (! -s "$dump.zwc" || "$dump" -nt "$dump.zwc") ]]; then
+    zcompile "$dump"
+  fi
+done
+unsetopt EXTENDEDGLOB
+compinit -C
+
 autoload -U +X bashcompinit && bashcompinit
-autoload -U +X compinit && compinit
+__zshrc_profile "Completion system"
 
 XDG_CONFIG_HOME="$HOME/.config"
 XDG_DATA_HOME="$XDG_CONFIG_HOME/local/share"
@@ -280,34 +313,90 @@ autoload -z edit-command-line
 zle -N edit-command-line
 bindkey '^xe' edit-command-line
 
+__zshrc_profile "Config and keybindings"
+
 # Load all files from zshrc.d directory
 if [ -d $HOME/.zsh.d ]; then
     for file in $HOME/.zsh.d/*.zsh; do
         source $file
     done
 fi
+__zshrc_profile "Custom zsh.d files"
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+__zshrc_profile "FZF"
 
 export PATH="$HOME/go/bin:$HOME/.local/bin/:${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
 GPG_TTY=$(tty)
 export GPG_TTY
 
-type brew &>/dev/null && FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
-command -v brew >/dev/null && export PATH="/opt/homebrew/bin:$PATH"
-command -v flux >/dev/null && . <(flux completion zsh)
-command -v kubectl >/dev/null && . <(kubectl completion zsh)
+__zshrc_profile "PATH setup"
+
+# Cache brew prefix to avoid slow subprocess call
+# Use /opt/homebrew for Apple Silicon, /usr/local for Intel
+if [ -x /opt/homebrew/bin/brew ]; then
+  HOMEBREW_PREFIX="/opt/homebrew"
+elif [ -x /usr/local/bin/brew ]; then
+  HOMEBREW_PREFIX="/usr/local"
+elif type brew &>/dev/null; then
+  HOMEBREW_PREFIX="$(brew --prefix)"
+fi
+
+if [ -n "$HOMEBREW_PREFIX" ]; then
+  FPATH="$HOMEBREW_PREFIX/share/zsh/site-functions:${FPATH}"
+  export PATH="$HOMEBREW_PREFIX/sbin:$HOMEBREW_PREFIX/bin:$PATH"
+fi
+__zshrc_profile "Homebrew setup"
+
+# Cache kubectl/flux completions for faster startup
+if command -v kubectl >/dev/null; then
+  if [[ ! -f "$XDG_CACHE_HOME/zsh/kubectl_completion.zsh" ]] || [[ ! -s "$XDG_CACHE_HOME/zsh/kubectl_completion.zsh" ]]; then
+    mkdir -p "$XDG_CACHE_HOME/zsh"
+    kubectl completion zsh > "$XDG_CACHE_HOME/zsh/kubectl_completion.zsh" 2>/dev/null &!
+  fi
+  [[ -s "$XDG_CACHE_HOME/zsh/kubectl_completion.zsh" ]] && source "$XDG_CACHE_HOME/zsh/kubectl_completion.zsh"
+fi
+
+if command -v flux >/dev/null; then
+  if [[ ! -f "$XDG_CACHE_HOME/zsh/flux_completion.zsh" ]] || [[ ! -s "$XDG_CACHE_HOME/zsh/flux_completion.zsh" ]]; then
+    mkdir -p "$XDG_CACHE_HOME/zsh"
+    flux completion zsh > "$XDG_CACHE_HOME/zsh/flux_completion.zsh" 2>/dev/null &!
+  fi
+  [[ -s "$XDG_CACHE_HOME/zsh/flux_completion.zsh" ]] && source "$XDG_CACHE_HOME/zsh/flux_completion.zsh"
+fi
+__zshrc_profile "kubectl/flux completions"
+
 command -v tk >/dev/null && complete -o nospace -C /opt/homebrew/bin/tk tk
 command -v terraform >/dev/null && complete -o nospace -C terraform terraform
-autoload -U +X bashcompinit && bashcompinit
+__zshrc_profile "terraform/tk completions"
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+__zshrc_profile "iTerm2 integration"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+__zshrc_profile "Powerlevel10k"
 
 test -e "$HOME/.asdf/asdf.sh" && source "$HOME/.asdf/asdf.sh"
+__zshrc_profile "asdf"
 
-export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+# Lazy-load nvm for faster startup
+export NVM_DIR="$HOME/.nvm"
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+  # Create lazy-loading wrapper functions for nvm, node, npm, etc.
+  for cmd in nvm node npm npx; do
+    eval "${cmd}() { unset -f nvm node npm npx; [ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"; [ -s \"$NVM_DIR/bash_completion\" ] && . \"$NVM_DIR/bash_completion\"; ${cmd} \"\$@\"; }"
+  done
+fi
+__zshrc_profile "nvm (lazy-loaded)"
+
+. "$HOME/.local/bin/env"
+__zshrc_profile "Local env"
+
+if [[ -n "$ZSHRC_PROFILE" ]]; then
+  local total_time=$(( (EPOCHREALTIME - __zshrc_profile_start) * 1000 ))
+  printf "\n%6.2f ms  TOTAL\n" $total_time >&2
+  unset __zshrc_profile_start __zshrc_profile_time
+  unfunction __zshrc_profile
+fi
