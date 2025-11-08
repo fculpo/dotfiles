@@ -394,6 +394,15 @@ __zshrc_profile "nvm (lazy-loaded)"
 . "$HOME/.local/bin/env"
 __zshrc_profile "Local env"
 
+autoload -U add-zsh-hook
+load-nvmrc() {
+  if [[ -f .nvmrc && -r .nvmrc ]]; then
+    nvm use
+  fi
+}
+add-zsh-hook chpwd load-nvmrc
+load-nvmrc
+
 if [[ -n "$ZSHRC_PROFILE" ]]; then
   local total_time=$(( (EPOCHREALTIME - __zshrc_profile_start) * 1000 ))
   printf "\n%6.2f ms  TOTAL\n" $total_time >&2
