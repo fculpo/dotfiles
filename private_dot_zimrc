@@ -27,7 +27,6 @@ zmodule utility
 zmodule direnv
 zmodule fzf
 zmodule asdf
-zmodule magic-enter
 zmodule smite
 zmodule homebrew
 zmodule romkatv/powerlevel10k --use degit
