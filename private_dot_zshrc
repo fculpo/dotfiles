@@ -1,25 +1,7 @@
-# Start configuration added by Zim install {{{
+# Start configuration added by Zim Framework install {{{
 #
 # User configuration sourced by interactive shells
 #
-
-# Optional: Enable startup profiling by setting ZSHRC_PROFILE=1
-# Usage: ZSHRC_PROFILE=1 zsh
-if [[ -n "$ZSHRC_PROFILE" ]]; then
-  zmodload zsh/datetime
-  setopt PROMPT_SUBST
-  __zshrc_profile_start=$EPOCHREALTIME
-
-  __zshrc_profile() {
-    local now=$EPOCHREALTIME
-    local elapsed=$(( (now - __zshrc_profile_time) * 1000 ))
-    printf "%6.2f ms  %s\n" $elapsed "$1" >&2
-    __zshrc_profile_time=$now
-  }
-  __zshrc_profile_time=$__zshrc_profile_start
-else
-  __zshrc_profile() { }
-fi
 
 # -----------------
 # Zsh configuration
@@ -48,13 +30,6 @@ bindkey -e
 # Remove path separator from WORDCHARS.
 WORDCHARS=${WORDCHARS//[\/]}
 
-# -----------------
-# Zim configuration
-# -----------------
-
-# Use degit instead of git as the default tool to install and update modules.
-#zstyle ':zim:zmodule' use 'degit'
-
 # --------------------
 # Module configuration
 # --------------------
@@ -71,7 +46,7 @@ WORDCHARS=${WORDCHARS//[\/]}
 #
 
 # Append `../` to your input for each `.` you type after an initial `..`
-#zstyle ':zim:input' double-dot-expand yes
+zstyle ':zim:input' double-dot-expand yes
 
 #
 # termtitle
@@ -80,7 +55,7 @@ WORDCHARS=${WORDCHARS//[\/]}
 # Set a custom terminal title format using prompt expansion escape sequences.
 # See http://zsh.sourceforge.net/Doc/Release/Prompt-Expansion.html#Simple-Prompt-Escapes
 # If none is provided, the default '%n@%m: %~' is used.
-#zstyle ':zim:termtitle' format '%1~'
+zstyle ':zim:termtitle' format '%1~'
 
 #
 # zsh-autosuggestions
@@ -92,7 +67,7 @@ ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 
 # Customize the style that the suggestions are shown with.
 # See https://github.com/zsh-users/zsh-autosuggestions/blob/master/README.md#suggestion-highlight-style
-#ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=242'
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=242'
 
 #
 # zsh-syntax-highlighting
@@ -104,16 +79,14 @@ ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
 
 # Customize the main highlighter styles.
 # See https://github.com/zsh-users/zsh-syntax-highlighting/blob/master/docs/highlighters/main.md#how-to-tweak-it
-typeset -A ZSH_HIGHLIGHT_STYLES
-ZSH_HIGHLIGHT_STYLES[comment]='fg=242'
+#typeset -A ZSH_HIGHLIGHT_STYLES
+#ZSH_HIGHLIGHT_STYLES[comment]='fg=242'
 
 # ------------------
 # Initialize modules
 # ------------------
 
 ZIM_HOME=${ZDOTDIR:-${HOME}}/.zim
-__zshrc_profile "Pre-init setup"
-
 # Download zimfw plugin manager if missing.
 if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
   if (( ${+commands[curl]} )); then
@@ -125,12 +98,11 @@ if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
   fi
 fi
 # Install missing modules, and update ${ZIM_HOME}/init.zsh if missing or outdated.
-if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZDOTDIR:-${HOME}}/.zimrc ]]; then
-  source ${ZIM_HOME}/zimfw.zsh init -q
+if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]]; then
+  source ${ZIM_HOME}/zimfw.zsh init
 fi
 # Initialize modules.
 source ${ZIM_HOME}/init.zsh
-__zshrc_profile "Zim initialization"
 
 # ------------------------------
 # Post-init module configuration
@@ -147,29 +119,13 @@ for key ('^[[B' '^N' ${terminfo[kcud1]}) bindkey ${key} history-substring-search
 for key ('k') bindkey -M vicmd ${key} history-substring-search-up
 for key ('j') bindkey -M vicmd ${key} history-substring-search-down
 unset key
-# }}} End configuration added by Zim install
+# }}} End configuration added by Zim Framework install
 
-# Optimize compinit by caching - only rebuild once per day
-autoload -Uz compinit
-setopt EXTENDEDGLOB
-for dump in ${ZDOTDIR:-$HOME}/.zcompdump(#qNmh-24); do
-  compinit
-  if [[ -s "$dump" && (! -s "$dump.zwc" || "$dump" -nt "$dump.zwc") ]]; then
-    zcompile "$dump"
-  fi
-done
-unsetopt EXTENDEDGLOB
-compinit -C
 
+# Enable bash completion compatibility.
+# After this, you can use complete -F and other bash completion commands in zsh, 
+# which is useful for tools that only provide bash completion scripts (like terraform, kubectl, etc).
 autoload -U +X bashcompinit && bashcompinit
-__zshrc_profile "Completion system"
-
-XDG_CONFIG_HOME="$HOME/.config"
-XDG_DATA_HOME="$XDG_CONFIG_HOME/local/share"
-XDG_CACHE_HOME="$XDG_CONFIG_HOME/cache"
-
-EDITOR="vim"
-VISUAL="vim"
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
@@ -178,56 +134,48 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# History
+XDG_CONFIG_HOME="$HOME/.config"
+XDG_DATA_HOME="$XDG_CONFIG_HOME/local/share"
+XDG_CACHE_HOME="$XDG_CONFIG_HOME/cache"
+EDITOR="vim"
+VISUAL="vim"
+
 HISTFILE="$HOME/.zsh_history"
-HISTFILESIZE=10000000
-HISTSIZE=10000000
-SAVEHIST=500000
-#HISTTIMEFORMAT="[%F %T] "
+HISTSIZE=50000
+SAVEHIST=50000
 
-unsetopt SHARE_HISTORY
-unsetopt BEEP
-unsetopt MENU_COMPLETE     # Do not autoselect the first completion entry.
-unsetopt CASE_GLOB         # Case-insensitive completion
-unsetopt CORRECT
-unsetopt CORRECT_ALL
+setopt EXTENDED_HISTORY 
+setopt SHARE_HISTORY
+setopt HIST_FIND_NO_DUPS      # Skip duplicates when searching (Ctrl+R)
+setopt HIST_VERIFY            # Show command before executing from history
+# setopt INC_APPEND_HISTORY   # Redundant with SHARE_HISTORY - Write to history file immediately
+setopt HIST_REDUCE_BLANKS     # Remove extra blanks from commands
 
-setopt HIST_IGNORE_ALL_DUPS
-setopt HIST_REDUCE_BLANKS
-setopt HIST_SAVE_NO_DUPS
-setopt HIST_FIND_NO_DUPS
-setopt EXTENDED_HISTORY
-setopt INC_APPEND_HISTORY
-setopt HIST_VERIFY
-setopt AUTO_CD
-setopt AUTO_LIST
-setopt AUTO_MENU
-setopt ALWAYS_TO_END
-setopt NOTIFY
-setopt COMPLETE_IN_WORD    # Complete from both ends of a word.
-setopt PATH_DIRS           # Perform path search even on command names with slashes.
-setopt AUTO_PARAM_SLASH    # If completed parameter is a directory, add a trailing slash.
-setopt EXTENDED_GLOB       # Needed for file modification glob modifiers with compinit
-setopt GLOB_DOTS
-setopt INTERACTIVECOMMENTS
-setopt LIST_PACKED
-setopt LONG_LIST_JOBS
-setopt NO_FLOW_CONTROL
-setopt NONOMATCH
-setopt PUSHD_IGNORE_DUPS
+# Completion behavior
+unsetopt MENU_COMPLETE        # Don't cycle through completions with TAB
+setopt AUTO_LIST              # List choices on ambiguous completion
+setopt COMPLETE_IN_WORD       # Complete from cursor position
+setopt AUTO_PARAM_SLASH       # Add trailing slash for directories
 
+# Directory navigation
+setopt AUTO_CD                # Type directory name to cd into it
+setopt PUSHD_IGNORE_DUPS      # No duplicate entries in directory stack
 
-# Remove / and # from WORDCHARS
-WORDCHARS=${${WORDCHARS:s#/#}:s,#,}
+# Globbing
+unsetopt CASE_GLOB            # Case-insensitive globbing
+setopt EXTENDED_GLOB          # Advanced globbing (**, ^, ~, etc.)
+unsetopt GLOB_DOTS            # ⚠️ If enabled, globs match dotfiles - be careful with rm *
+setopt NO_NOMATCH             # Pass through unmatched globs instead of error
 
-zmodload -i zsh/complist
+# Misc
+unsetopt PATH_DIRS            # Don't search PATH for slashed commands (security)
+setopt NOTIFY                 # Immediate job notifications
+setopt NO_FLOW_CONTROL        # Disable Ctrl+S/Ctrl+Q
+setopt NO_LIST_BEEP           # No beep on completion list
 
-zstyle :compinstall filename '$HOME/.zshrc'
-
-zstyle ':completion:*' verbose yes
-zstyle ':completion:*' menu select=0 # interactive  #menu select=0 interactive #search
+zstyle ':completion:*' verbose true
+zstyle ':completion:*' menu select=0 interactive search
 zstyle ':completion:::::' completer _extensions _complete _approximate
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
 
 # Complete the alias when _expand_alias is used as a function
 zstyle ':completion:*' complete true
@@ -248,20 +196,12 @@ zstyle ':completion:*:*:*:*:descriptions' format '%F{blue}-- %D %d --%f'
 zstyle ':completion:*:*:*:*:messages' format ' %F{purple} -- %d --%f'
 zstyle ':completion:*:*:*:*:warnings' format ' %F{red}-- no matches found --%f'
 #zstyle ':completion:*:default' list-prompt '%S%M matches%s'
-# Colors for files and directory
-zstyle ':completion:*:*:*:*:default' list-colors ${(s.:.)LS_COLORS}
-
-# Only display some tags for the command cd
-zstyle ':completion:*:*:cd:*' tag-order local-directories directory-stack path-directories
 
 # Group matches and describe.
 zstyle ':completion:*:matches' group 'yes'
 zstyle ':completion:*:options' description 'yes'
 zstyle ':completion:*:options' auto-description '%d'
 #zstyle ':completion:*' format ' %F{yellow}-- %d --%f'
-
-# Required for completion to be in good groups (named after the tags)
-zstyle ':completion:*' group-name ''
 
 zstyle ':completion:*:*:-command-:*:*' group-order aliases builtins functions commands
 
@@ -272,9 +212,7 @@ zstyle ':completion:*' keep-prefix true
 
 zstyle -e ':completion:*:(ssh|scp|sftp|rsh|rsync):hosts' hosts 'reply=(${=${${(f)"$(cat {/etc/ssh_,~/.ssh/known_}hosts(|2)(N) /dev/null)"}%%[# ]*}//,/ })'
 
-# Directories
 zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*:*:cd:*' tag-order local-directories directory-stack path-directories
 zstyle ':completion:*:*:cd:*:directory-stack' menu yes select
 zstyle ':completion:*:-tilde-:*' group-order 'named-directories' 'path-directories' 'users' 'expand'
 zstyle ':completion:*' squeeze-slashes true
@@ -289,111 +227,28 @@ zstyle ':completion:*:*:*:users' ignored-patterns \
   operator pcap postfix postgres privoxy pulse pvm quagga radvd \
   rpc rpcuser rpm shutdown squid sshd sync uucp vcsa xfs '_*'
 
-zstyle ':zim:input' double-dot-expand yes
-
-# Gray color for autosuggestions
-#ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=247'
-
-# Colorizes ls on macOS
-export CLICOLOR=1
-export GREP_COLORS='1;35;40'
-
-# Pagination in autocompletion
-export PAGER="less"
-
-# bindkey "^[[3~" delete-char
-bindkey "^[[1;2D" backward-word # Shift <-
-bindkey "^[[1;2C" forward-word  # Shift ->
-
-# zsh-users/zsh-history-substring-search
-bindkey '^[[A' history-substring-search-up
-bindkey '^[[B' history-substring-search-down
-
-autoload -z edit-command-line
+# Bind edit-command-line to Ctrl+X, then Ctrl+E (standard for editing the command line in $EDITOR)
+autoload -U edit-command-line
 zle -N edit-command-line
-bindkey '^xe' edit-command-line
-
-__zshrc_profile "Config and keybindings"
+bindkey '^X^E' edit-command-line
 
 # Load all files from zshrc.d directory
-if [ -d $HOME/.zsh.d ]; then
-    for file in $HOME/.zsh.d/*.zsh; do
-        source $file
+if [ -d "$HOME/.zsh.d" ]; then
+    for file in "$HOME/.zsh.d"/*.zsh(N); do
+        source "$file"
     done
 fi
-__zshrc_profile "Custom zsh.d files"
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-__zshrc_profile "FZF"
+export PATH="$HOME/go/bin:$HOME/.local/bin/:$PATH"
 
-export PATH="$HOME/go/bin:$HOME/.local/bin/:${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
-
-GPG_TTY=$(tty)
-export GPG_TTY
-
-__zshrc_profile "PATH setup"
-
-# Cache brew prefix to avoid slow subprocess call
-# Use /opt/homebrew for Apple Silicon, /usr/local for Intel
-if [ -x /opt/homebrew/bin/brew ]; then
-  HOMEBREW_PREFIX="/opt/homebrew"
-elif [ -x /usr/local/bin/brew ]; then
-  HOMEBREW_PREFIX="/usr/local"
-elif type brew &>/dev/null; then
-  HOMEBREW_PREFIX="$(brew --prefix)"
+# Set GPG_TTY to the current terminal only if running in an interactive terminal (tty).
+# This ensures GPG works correctly for pinentry and other interactive operations.
+if [[ -t 1 ]]; then
+  GPG_TTY=$(tty)
+  export GPG_TTY
 fi
 
-if [ -n "$HOMEBREW_PREFIX" ]; then
-  FPATH="$HOMEBREW_PREFIX/share/zsh/site-functions:${FPATH}"
-  export PATH="$HOMEBREW_PREFIX/sbin:$HOMEBREW_PREFIX/bin:$PATH"
-fi
-__zshrc_profile "Homebrew setup"
-
-# Cache kubectl/flux completions for faster startup
-if command -v kubectl >/dev/null; then
-  if [[ ! -f "$XDG_CACHE_HOME/zsh/kubectl_completion.zsh" ]] || [[ ! -s "$XDG_CACHE_HOME/zsh/kubectl_completion.zsh" ]]; then
-    mkdir -p "$XDG_CACHE_HOME/zsh"
-    kubectl completion zsh > "$XDG_CACHE_HOME/zsh/kubectl_completion.zsh" 2>/dev/null &!
-  fi
-  [[ -s "$XDG_CACHE_HOME/zsh/kubectl_completion.zsh" ]] && source "$XDG_CACHE_HOME/zsh/kubectl_completion.zsh"
-fi
-
-if command -v flux >/dev/null; then
-  if [[ ! -f "$XDG_CACHE_HOME/zsh/flux_completion.zsh" ]] || [[ ! -s "$XDG_CACHE_HOME/zsh/flux_completion.zsh" ]]; then
-    mkdir -p "$XDG_CACHE_HOME/zsh"
-    flux completion zsh > "$XDG_CACHE_HOME/zsh/flux_completion.zsh" 2>/dev/null &!
-  fi
-  [[ -s "$XDG_CACHE_HOME/zsh/flux_completion.zsh" ]] && source "$XDG_CACHE_HOME/zsh/flux_completion.zsh"
-fi
-__zshrc_profile "kubectl/flux completions"
-
-command -v tk >/dev/null && complete -o nospace -C /opt/homebrew/bin/tk tk
-command -v terraform >/dev/null && complete -o nospace -C terraform terraform
-__zshrc_profile "terraform/tk completions"
-
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-__zshrc_profile "iTerm2 integration"
-
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-__zshrc_profile "Powerlevel10k"
-
-test -e "$HOME/.asdf/asdf.sh" && source "$HOME/.asdf/asdf.sh"
-__zshrc_profile "asdf"
-
-# Lazy-load nvm for faster startup
-export NVM_DIR="$HOME/.nvm"
-if [ -s "$NVM_DIR/nvm.sh" ]; then
-  # Create lazy-loading wrapper functions for nvm, node, npm, etc.
-  for cmd in nvm node npm npx; do
-    eval "${cmd}() { unset -f nvm node npm npx; [ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"; [ -s \"$NVM_DIR/bash_completion\" ] && . \"$NVM_DIR/bash_completion\"; ${cmd} \"\$@\"; }"
-  done
-fi
-__zshrc_profile "nvm (lazy-loaded)"
-
-. "$HOME/.local/bin/env"
-__zshrc_profile "Local env"
-
+# Automatically switch to the Node version specified in .nvmrc
 autoload -U add-zsh-hook
 load-nvmrc() {
   if [[ -f .nvmrc && -r .nvmrc ]]; then
@@ -403,9 +258,24 @@ load-nvmrc() {
 add-zsh-hook chpwd load-nvmrc
 load-nvmrc
 
-if [[ -n "$ZSHRC_PROFILE" ]]; then
-  local total_time=$(( (EPOCHREALTIME - __zshrc_profile_start) * 1000 ))
-  printf "\n%6.2f ms  TOTAL\n" $total_time >&2
-  unset __zshrc_profile_start __zshrc_profile_time
-  unfunction __zshrc_profile
+# Lazy-load nvm for faster startup
+export NVM_DIR="$HOME/.nvm"
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+  # Create lazy-loading wrapper functions for nvm, node, npm, etc.
+  for cmd in nvm node npm npx; do
+    eval "${cmd}() {
+      unset -f nvm node npm npx
+      [ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"
+      [ -s \"$NVM_DIR/bash_completion\" ] && . \"$NVM_DIR/bash_completion\"
+      ${cmd} \"\$@\"
+    }"
+  done
 fi
+
+[ -f "$HOME/.local/bin/env" ] && source "$HOME/.local/bin/env"
+
+eval "$(/opt/homebrew/bin/brew shellenv)"
+eval "$(zoxide init zsh)"
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
