@@ -1,0 +1,8 @@
+# Don't sync wezterm config to containers (it's a GUI app)
+{{- if .isContainer }}
+.config/wezterm/
+{{- end }}
+
+# README and docs
+README.md
+LICENSE

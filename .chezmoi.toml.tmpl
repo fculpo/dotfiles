@@ -1,0 +1,10 @@
+{{- $isContainer := env "CONTAINER" | not | not -}}
+{{- $isDevbox := env "DEVBOX" | not | not -}}
+{{- $isHost := not $isContainer -}}
+
+[data]
+    name = "Fab"
+    email = "{{ env "EMAIL" | default "fab@example.com" }}"
+    isContainer = {{ $isContainer }}
+    isDevbox = {{ $isDevbox }}
+    isHost = {{ $isHost }}
