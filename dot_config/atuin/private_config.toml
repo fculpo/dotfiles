@@ -1,0 +1,39 @@
+## Atuin config - local mode (no sync)
+
+# Disable sync (local only)
+[sync]
+records = false
+
+[settings]
+# Search mode: prefix, fulltext, fuzzy, skim
+search_mode = "fuzzy"
+
+# Filter mode when searching
+filter_mode = "global"
+
+# Style: auto, full, compact
+style = "compact"
+
+# Show help in search
+show_help = true
+
+# Exit on ESC
+exit_mode = "return-query"
+
+# History filter (ignore sensitive commands)
+history_filter = [
+    "^export ",
+    "^set ",
+    "^unset ",
+    "password",
+    "secret",
+    "token",
+    "AWS_",
+    "API_KEY",
+    "PRIVATE",
+]
+
+# Disable up arrow binding (use Ctrl+R instead)
+# We set this because your zsh already has history-substring-search bound
+[keys]
+# You can still use Ctrl+R for atuin search
