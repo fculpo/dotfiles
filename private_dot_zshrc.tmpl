@@ -278,13 +278,14 @@ fi
 
 {{- if .isHost }}
 # macOS host - Homebrew
-eval "$(/opt/homebrew/bin/brew shellenv)"
+[ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
 {{- end }}
 
-eval "$(zoxide init zsh)"
+# Zoxide - smart cd
+command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 
 # Mise - dev tool version manager
-eval "$(mise activate zsh)"
+command -v mise &>/dev/null && eval "$(mise activate zsh)"
 
 # Atuin - shell history (no keybindings, use `atuin search` manually)
 [ -f "$HOME/.atuin/bin/env" ] && source "$HOME/.atuin/bin/env"
