@@ -1,10 +1,5 @@
 alias crypto='curl rate.sx' # Get crypto prices
 
-# wget sucks with certificates. Let's keep it simple.
-alias wget="curl -O"
-
-# [[ "$(command -v colordiff)" ]] && alias diff='colordiff'
-
 alias h='history'
 alias j='jobs -l'
 alias path='echo -e ${PATH//:/\\n}'

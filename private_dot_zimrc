@@ -41,11 +41,6 @@ zmodule joke/zim-kubectl
 zmodule MichaelAquilina/zsh-you-should-use
 zmodule joke/zim-chezmoi
 
-# kinda useless
-# zmodule joke/zim-k9s
-# Using zoxide instead of z
-# zmodule agkozak/zsh-z
-
 #
 # Prompt
 #
@@ -53,9 +48,9 @@ zmodule joke/zim-chezmoi
 # Exposes how long the last command took to run to prompts.
 zmodule duration-info
 # Exposes git repository status information to prompts.
-zmodule git-info
+# zmodule git-info
 # A heavily reduced, ASCII-only version of the Spaceship and Starship prompts.
-zmodule asciiship
+# zmodule asciiship
 
 #
 # Completion

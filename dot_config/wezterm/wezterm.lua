@@ -72,7 +72,7 @@ else
 end
 
 -- Choose your favourite font, make sure it's installed on your machine
-config.font = wezterm.font({ family = 'Zenbones Brainy' })
+config.font = wezterm.font({ family = 'IosevkaTerm Nerd Font' })
 -- And a font size that won't have you squinting
 config.font_size = 14
 
@@ -84,7 +84,7 @@ config.window_decorations = "RESIZE"
 config.window_frame = {
   -- An idea could be to try a serif font here instead of
   -- monospace for a nicer look
-  font = wezterm.font({ family = 'Zenbones Brainy', weight = 'Bold' }),
+  font = wezterm.font({ family = 'Iosevka Nerd Font', weight = 'Bold' }),
   font_size = 13,
 }
 
