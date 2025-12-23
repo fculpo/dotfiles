@@ -286,5 +286,7 @@ command -v uvx &>/dev/null && eval "$(uvx --generate-shell-completion zsh)"
 # [ -f "$HOME/.atuin/bin/env" ] && source "$HOME/.atuin/bin/env"
 command -v atuin &>/dev/null && eval "$(atuin init zsh --disable-up-arrow --disable-ctrl-r)"
 
+[ -f "$HOME/.config/wezterm/shell-integration.sh" ] && source "$HOME/.config/wezterm/shell-integration.sh"
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

@@ -105,7 +105,6 @@ symbol = "☸"
 style = "bg:orange"
 format = '[[ $symbol( $context/$namespace) ](fg:crust bg:green)]($style)'
 disabled = false
-# contexts = [{ context_pattern = ".*prod", style = "red", symbol = "💔 " }]
 
 [golang]
 symbol = ""
