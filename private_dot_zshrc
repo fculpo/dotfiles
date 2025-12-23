@@ -1,4 +1,4 @@
-# Start configuration added by Zim Framework install {{ "{{{" }}
+# Start configuration added by Zim Framework install {{{
 #
 # User configuration sourced by interactive shells
 #
@@ -119,7 +119,7 @@ for key ('^[[B' '^N' ${terminfo[kcud1]}) bindkey ${key} history-substring-search
 for key ('k') bindkey -M vicmd ${key} history-substring-search-up
 for key ('j') bindkey -M vicmd ${key} history-substring-search-down
 unset key
-# {{ "}}}" }} End configuration added by Zim Framework install
+# }}} End configuration added by Zim Framework install
 
 
 # Enable bash completion compatibility.
@@ -174,7 +174,7 @@ setopt NO_FLOW_CONTROL        # Disable Ctrl+S/Ctrl+Q
 setopt NO_LIST_BEEP           # No beep on completion list
 
 zstyle ':completion:*' verbose true
-zstyle ':completion:*' menu select=0 interactive search
+zstyle ':completion:*' menu select=0 search
 zstyle ':completion:::::' completer _extensions _complete _approximate
 
 # Complete the alias when _expand_alias is used as a function
@@ -240,6 +240,7 @@ if [ -d "$HOME/.zsh.d" ]; then
 fi
 
 export PATH="$HOME/go/bin:$HOME/.local/bin/:$PATH"
+export NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem
 
 # Set GPG_TTY to the current terminal only if running in an interactive terminal (tty).
 # This ensures GPG works correctly for pinentry and other interactive operations.
@@ -248,7 +249,6 @@ if [[ -t 1 ]]; then
   export GPG_TTY
 fi
 
-{{- if .isHost }}
 # Automatically switch to the Node version specified in .nvmrc
 autoload -U add-zsh-hook
 load-nvmrc() {
@@ -272,23 +272,18 @@ if [ -s "$NVM_DIR/nvm.sh" ]; then
     }"
   done
 fi
-{{- end }}
 
 [ -f "$HOME/.local/bin/env" ] && source "$HOME/.local/bin/env"
-
-{{- if .isHost }}
-# macOS host - Homebrew
 [ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
-{{- end }}
 
-# Zoxide - smart cd
 command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
-
-# Mise - dev tool version manager
 command -v mise &>/dev/null && eval "$(mise activate zsh)"
+command -v uv &>/dev/null && eval "$(uv generate-shell-completion zsh)"
+command -v uvx &>/dev/null && eval "$(uvx --generate-shell-completion zsh)"
 
-# Atuin - shell history (no keybindings, use `atuin search` manually)
-[ -f "$HOME/.atuin/bin/env" ] && source "$HOME/.atuin/bin/env"
+#command -v starship &>/dev/null && eval "$(starship init zsh)"
+
+# [ -f "$HOME/.atuin/bin/env" ] && source "$HOME/.atuin/bin/env"
 command -v atuin &>/dev/null && eval "$(atuin init zsh --disable-up-arrow --disable-ctrl-r)"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
