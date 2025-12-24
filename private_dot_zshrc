@@ -144,11 +144,11 @@ HISTFILE="$HOME/.zsh_history"
 HISTSIZE=50000
 SAVEHIST=50000
 
-setopt EXTENDED_HISTORY 
-setopt SHARE_HISTORY
+unsetopt SHARE_HISTORY
+setopt INC_APPEND_HISTORY
+setopt EXTENDED_HISTORY
 setopt HIST_FIND_NO_DUPS      # Skip duplicates when searching (Ctrl+R)
 setopt HIST_VERIFY            # Show command before executing from history
-# setopt INC_APPEND_HISTORY   # Redundant with SHARE_HISTORY - Write to history file immediately
 setopt HIST_REDUCE_BLANKS     # Remove extra blanks from commands
 
 # Completion behavior
