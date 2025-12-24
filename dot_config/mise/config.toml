@@ -1,0 +1,13 @@
+[tools]
+"npm:@anthropic-ai/claude-code" = "latest"
+atuin = "latest"
+bun = "latest"
+lsd = "latest"
+node = "lts/jod"
+zoxide = "latest"
+usage = "latest"
+
+[settings]
+
+[settings.npm]
+package_manager = "bun"
