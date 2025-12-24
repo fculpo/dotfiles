@@ -23,10 +23,9 @@ zmodule utility
 
 # This module should be sourced first, before any other, 
 # so commands installed via Homebrew are available to the other modules when needed.
-
+zmodule joke/zim-mise 
 zmodule direnv
 zmodule fzf
-zmodule asdf
 zmodule smite
 zmodule homebrew
 zmodule romkatv/powerlevel10k --use degit

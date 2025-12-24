@@ -239,7 +239,7 @@ if [ -d "$HOME/.zsh.d" ]; then
     done
 fi
 
-export PATH="$HOME/go/bin:$HOME/.local/bin/:$PATH"
+export PATH="$HOME/go/bin:$HOME/.local/bin/:$HOME/.atuin/bin:$PATH"
 export NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem
 
 # Set GPG_TTY to the current terminal only if running in an interactive terminal (tty).
@@ -249,44 +249,18 @@ if [[ -t 1 ]]; then
   export GPG_TTY
 fi
 
-# Automatically switch to the Node version specified in .nvmrc
-autoload -U add-zsh-hook
-load-nvmrc() {
-  if [[ -f .nvmrc && -r .nvmrc ]]; then
-    nvm use
-  fi
-}
-add-zsh-hook chpwd load-nvmrc
-load-nvmrc
-
-# Lazy-load nvm for faster startup
-export NVM_DIR="$HOME/.nvm"
-if [ -s "$NVM_DIR/nvm.sh" ]; then
-  # Create lazy-loading wrapper functions for nvm, node, npm, etc.
-  for cmd in nvm node npm npx; do
-    eval "${cmd}() {
-      unset -f nvm node npm npx
-      [ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"
-      [ -s \"$NVM_DIR/bash_completion\" ] && . \"$NVM_DIR/bash_completion\"
-      ${cmd} \"\$@\"
-    }"
-  done
-fi
-
 [ -f "$HOME/.local/bin/env" ] && source "$HOME/.local/bin/env"
 [ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+[ -f "$HOME/.config/wezterm/shell-integration.sh" ] && source "$HOME/.config/wezterm/shell-integration.sh"
 
 command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 command -v mise &>/dev/null && eval "$(mise activate zsh)"
 command -v uv &>/dev/null && eval "$(uv generate-shell-completion zsh)"
 command -v uvx &>/dev/null && eval "$(uvx --generate-shell-completion zsh)"
-
 #command -v starship &>/dev/null && eval "$(starship init zsh)"
 
 # [ -f "$HOME/.atuin/bin/env" ] && source "$HOME/.atuin/bin/env"
 command -v atuin &>/dev/null && eval "$(atuin init zsh --disable-up-arrow --disable-ctrl-r)"
-
-[ -f "$HOME/.config/wezterm/shell-integration.sh" ] && source "$HOME/.config/wezterm/shell-integration.sh"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

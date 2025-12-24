@@ -1,0 +1,28 @@
+{{- $GIT_DELTA_VERSION := "0.18.2" -}}
+
+#!/usr/bin/env bash
+
+{{ if eq .osid "linux-debian" -}}
+sudo apt update -y
+sudo apt install --no-install-recommends -y curl ripgrep git vim fzf
+
+# Install mise - https://mise.jdx.dev/installing-mise.html#apt
+sudo install -dm 755 /etc/apt/keyrings
+curl -fSs https://mise.jdx.dev/gpg-key.pub | sudo tee /etc/apt/keyrings/mise-archive-keyring.pub 1> /dev/null
+echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.pub arch=$CHEZMOI_ARCH] https://mise.jdx.dev/deb stable main" | sudo tee /etc/apt/sources.list.d/mise.list
+sudo apt update -y
+sudo apt install -y mise
+
+# Install git delta for better claude diff
+curl -L "https://github.com/dandavison/delta/releases/download/{{ $GIT_DELTA_VERSION }}/git-delta_{{ $GIT_DELTA_VERSION }}_${CHEZMOI_ARCH}.deb" -o /tmp/delta.deb
+sudo dpkg -i /tmp/delta.deb
+rm /tmp/delta.deb
+
+{{ else if eq .osid "darwin" -}}
+
+brew install ripgrep
+
+{{ end -}}
+
+mise trust
+mise install
