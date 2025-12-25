@@ -1,11 +1,4 @@
-# Start configuration added by Zim Framework install {{{
-#
-# This is not sourced during shell startup and is only used to configure zimfw.
-#
-
-#
-# Modules
-#
+# shellcheck disable=SC2148
 
 # Sets sane Zsh built-in environment options.
 zmodule environment
@@ -21,8 +14,6 @@ zmodule utility
 # <-- Normally new modules should be added here. Check each module documentation
 # for any caveats.
 
-# This module should be sourced first, before any other, 
-# so commands installed via Homebrew are available to the other modules when needed.
 zmodule joke/zim-mise 
 zmodule direnv
 zmodule fzf
@@ -40,39 +31,33 @@ zmodule joke/zim-kubectl
 zmodule MichaelAquilina/zsh-you-should-use
 zmodule joke/zim-chezmoi
 
-#
-# Prompt
-#
 
 # Exposes how long the last command took to run to prompts.
 zmodule duration-info
+
 # Exposes git repository status information to prompts.
 # zmodule git-info
+
 # A heavily reduced, ASCII-only version of the Spaceship and Starship prompts.
 # zmodule asciiship
 
-#
-# Completion
-#
-
 # Additional completion definitions for Zsh.
 zmodule zsh-users/zsh-completions --fpath src
+
 # Enables and configures smart and extensive tab completion, must be sourced
 # after all modules that add completion definitions.
 zmodule completion
 
-#
-# Modules that must be initialized last
-#
+### Modules that must be initialized last
 
 # Fish-like syntax highlighting for Zsh, must be sourced after completion.
 zmodule zsh-users/zsh-syntax-highlighting
+
 # Fish-like history search for Zsh, must be sourced after
 # zsh-users/zsh-syntax-highlighting. Bind keyboard shortcuts in your ~/.zshrc:
 # https://github.com/zsh-users/zsh-history-substring-search/blob/master/README.md#usage
 zmodule zsh-users/zsh-history-substring-search
+
 # Fish-like autosuggestions for Zsh. Add the following to your ~/.zshrc to boost
 # performance: ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 zmodule zsh-users/zsh-autosuggestions
-# }}} End configuration added by Zim Framework install
-
