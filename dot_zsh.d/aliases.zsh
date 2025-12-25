@@ -29,7 +29,7 @@ alias kn="kubens"
 
 alias r="exec zsh"
 
-alias myip='curl http://ipecho.net/plain; echo'
+alias myip='curl https://ipv4.icanhazip.com; echo'
 
 # Alias Screensaver on macOS High Sierra as afk. My Mac locks when it starts.
 if [[ -f "/System/Library/CoreServices/ScreenSaverEngine.app/Contents/MacOS/ScreenSaverEngine" ]]; then
