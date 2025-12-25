@@ -203,6 +203,7 @@ fi
 
 [ -f "$HOME/.local/bin/env" ] && source "$HOME/.local/bin/env"
 [ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 [ -f "$HOME/.config/wezterm/shell-integration.sh" ] && source "$HOME/.config/wezterm/shell-integration.sh"
 
 command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"

@@ -1,11 +1,16 @@
 [tools]
 "npm:@anthropic-ai/claude-code" = "latest"
 atuin = "latest"
+bat = "latest"
 bun = "latest"
+delta = "latest"
+fzf = "latest"
 lsd = "latest"
 node = "lts/jod"
-zoxide = "latest"
+ripgrep = "latest"
 usage = "latest"
+uv = "latest"
+zoxide = "latest"
 
 [settings]
 

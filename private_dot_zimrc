@@ -20,7 +20,7 @@ zmodule fzf
 zmodule smite
 zmodule homebrew
 zmodule romkatv/powerlevel10k --use degit
-zmodule wfxr/forgit
+# zmodule wfxr/forgit
 zmodule joke/zim-yq
 zmodule ohmyzsh/ohmyzsh --root plugins/pass
 zmodule ohmyzsh/ohmyzsh --root plugins/sudo
