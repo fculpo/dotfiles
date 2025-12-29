@@ -4,14 +4,43 @@ local config = wezterm.config_builder()
 
 config.front_end = "WebGpu"
 config.use_fancy_tab_bar = false
+config.tab_bar_at_bottom = false
 config.show_new_tab_button_in_tab_bar = false
-config.tab_max_width = 64
-config.color_scheme = 'Tokyo Night'
+config.tab_max_width = 50
+
+config.font = wezterm.font({ family = 'IosevkaTerm Nerd Font' })
+config.font_size = 14
+
+config.color_scheme = 'Catppuccin Mocha'
+config.status_update_interval = 500
+
+config.window_background_opacity = 0.9
+config.macos_window_background_blur = 30
+config.window_decorations = "INTEGRATED_BUTTONS | RESIZE"
+
+local shells = { zsh = true, bash = true, fish = true, sh = true, dash = true, nu = true, pwsh = true }
+
+local function is_shell(tab)
+  local process = tab.active_pane and tab.active_pane.foreground_process_name or ''
+  process = process:match('([^/\\]+)$') or process
+  return shells[process] ~= nil
+end
+
+local function tab_cwd(tab)
+  if not is_shell(tab) then return '' end
+  local cwd = tab.active_pane and tab.active_pane.current_working_dir
+  if cwd then
+    local path = (cwd.file_path or tostring(cwd):gsub('file://[^/]*', '')):gsub("/$", "")
+    if path == wezterm.home_dir then return '~' end
+    -- TODO: fish compression
+    return path:gsub("^" .. wezterm.home_dir .. "/", "")
+  end
+end
 
 tabline.setup({
   options = {
     icons_enabled = true,
-    theme = 'Tokyo Night',
+    theme = 'Catppuccin Mocha',
     tabs_enabled = true,
     theme_overrides = {
       resize_mode = {
@@ -20,9 +49,9 @@ tabline.setup({
         c = { fg = '#cdd6f4', bg = '#181825' },
       },
       tab = {
-        active = { fg = '#89b4fa', bg = '#313244' },
-        inactive = { fg = '#cdd6f4', bg = '#181825' },
-        inactive_hover = { fg = '#f5c2e7', bg = '#313244' },
+        active = { fg = '#000000', bg = '#77A3F8' },
+        -- inactive = { fg = '#ffffff', bg = '#000000' },
+        -- inactive_hover = { fg = '#f5c2e7', bg = '#313244' },
       }
     },
     section_separators = {
@@ -34,8 +63,7 @@ tabline.setup({
       right = wezterm.nerdfonts.pl_right_soft_divider,
     },
     tab_separators = {
-      left = wezterm.nerdfonts.pl_left_hard_divider,
-      right = wezterm.nerdfonts.pl_right_hard_divider,
+      right = '',
     },
   },
   sections = {
@@ -43,31 +71,76 @@ tabline.setup({
     tabline_b = { 'workspace' },
     tabline_c = { ' ' },
     tab_active = {
-      'index',
-      { 'parent', padding = 0 },
-      '/',
-      { 'cwd',    padding = { left = 0, right = 1 } },
-      { 'zoomed', padding = 0 },
+      wezterm.nerdfonts.pl_left_hard_divider .. ' ' .. wezterm.nerdfonts.fa_hashtag,
+      { 'index', padding = { left = 1, right = 0 } },
+      {
+        'tab',
+        icon = wezterm.nerdfonts.cod_bookmark,
+        cond = function(tab) return tab.tab_title ~= '' end,
+        padding = { left = 1, right = 0 }
+      },
+      {
+        'process',
+        icons_only = true,
+        cond = function(tab) return is_shell(tab) end
+      },
+      {
+        'process',
+        icons_only = false,
+        cond = function(tab) return not is_shell(tab) end
+      },
+      {
+        "zoomed",
+        icon = wezterm.nerdfonts.oct_zoom_in,
+        padding = { left = 0, right = 0 },
+      },
     },
-    tab_inactive = { 'index', { 'process', padding = { left = 0, right = 1 } } },
+    tab_inactive = {
+      ' ' .. wezterm.nerdfonts.fa_hashtag,
+      {
+        'index',
+        padding = { left = 1, right = 0 }
+      },
+      {
+        'tab',
+        icon = wezterm.nerdfonts.fa_bookmark,
+        cond = function(tab) return tab.tab_title ~= '' end,
+        padding = { left = 1, right = 0 },
+      },
+      {
+        'process',
+        icons_only = true,
+        cond = function(tab) return is_shell(tab) end,
+        padding = { left = 1, right = 0 }
+      },
+      {
+        'process',
+        icons_only = false,
+        cond = function(tab) return not is_shell(tab) end,
+        padding = { left = 1, right = 0 }
+
+      },
+      tab_cwd,
+      { 'output', icon_no_output = '',                  padding = { left = 1, right = 0 } },
+      { 'zoomed', icon = wezterm.nerdfonts.oct_zoom_in, padding = 0 },
+    },
     tabline_w = { 'workspace' },
     tabline_x = { 'hostname', 'ram', 'cpu' },
     tabline_y = { 'battery' },
-    tabline_z = { 'domain' },
+    tabline_z = {
+      'domain',
+      domain_to_icon = {
+        default = wezterm.nerdfonts.md_monitor,
+        ssh = wezterm.nerdfonts.md_ssh,
+        wsl = wezterm.nerdfonts.md_microsoft_windows,
+        docker = wezterm.nerdfonts.md_docker,
+        unix = wezterm.nerdfonts.cod_terminal_linux,
+      },
+    },
   },
-  extensions = {},
+  extensions = { 'resurrect', 'smart_workspace_switcher', 'quick_domains' },
 })
 
-config.font = wezterm.font({ family = 'IosevkaTerm Nerd Font' })
-config.font_size = 14
-
-config.window_background_opacity = 0.9
-config.macos_window_background_blur = 30
-config.window_decorations = "RESIZE"
-config.window_frame = {
-  font = wezterm.font({ family = 'Iosevka Nerd Font', weight = 'Bold' }),
-  font_size = 13,
-}
 
 config.set_environment_variables = {
   PATH = '/opt/homebrew/bin:' .. os.getenv('PATH')
@@ -103,10 +176,31 @@ config.mouse_bindings = {
   {
     event = { Down = { streak = 3, button = 'Left' } },
     action = wezterm.action.SelectTextAtMouseCursor 'SemanticZone',
-  }
+  },
+  -- Override default click to only select text, not open links
+  {
+    event = { Up = { streak = 1, button = 'Left' } },
+    mods = 'NONE',
+    action = wezterm.action.CompleteSelection 'ClipboardAndPrimarySelection',
+  },
+  -- CMD+click to open hyperlinks
+  {
+    event = { Up = { streak = 1, button = 'Left' } },
+    mods = 'SUPER',
+    action = wezterm.action.OpenLinkAtMouseCursor,
+  },
+  -- Disable the Down event to avoid conflicts
+  {
+    event = { Down = { streak = 1, button = 'Left' } },
+    mods = 'SUPER',
+    action = wezterm.action.Nop,
+  },
 }
 
 config.keys = {
+  { key = 'LeftArrow',  mods = 'SUPER', action = wezterm.action.ActivateTabRelative(-1) },
+  { key = 'RightArrow', mods = 'SUPER', action = wezterm.action.ActivateTabRelative(1) },
+  { key = "Enter",      mods = "SHIFT", action = wezterm.action { SendString = "\x1b\r" } },
   {
     key = 't',
     mods = 'LEADER',
@@ -146,6 +240,11 @@ config.keys = {
       one_shot = false,
       timeout_milliseconds = 1000,
     }
+  },
+  {
+    key = 'z',
+    mods = 'LEADER',
+    action = wezterm.action.TogglePaneZoomState,
   },
   {
     key = '"',

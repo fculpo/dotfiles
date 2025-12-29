@@ -1,5 +1,4 @@
 [tools]
-"npm:@anthropic-ai/claude-code" = "latest"
 atuin = "latest"
 bat = "latest"
 bun = "latest"
