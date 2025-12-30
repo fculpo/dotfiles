@@ -1,41 +1,50 @@
-local wezterm = require 'wezterm'
-local tabline = wezterm.plugin.require("https://github.com/michaelbrusegard/tabline.wez")
-local config = wezterm.config_builder()
+local wezterm            = require 'wezterm'
+local config             = wezterm.config_builder()
+local keybindings        = require("keybindings")
+local utils              = require("utils")
+local resurrect          = require("resurrect")
 
-config.front_end = "WebGpu"
-config.use_fancy_tab_bar = false
-config.tab_bar_at_bottom = false
-config.show_new_tab_button_in_tab_bar = false
-config.tab_max_width = 50
+local tabline            = wezterm.plugin.require("https://github.com/michaelbrusegard/tabline.wez")
+local workspace_switcher = wezterm.plugin.require("https://github.com/MLFlexer/smart_workspace_switcher.wezterm")
 
-config.font = wezterm.font({ family = 'IosevkaTerm Nerd Font' })
-config.font_size = 14
 
-config.color_scheme = 'Catppuccin Mocha'
-config.status_update_interval = 500
+-- config.default_gui_startup_args                   = { 'connect', 'unix' }
+config.color_scheme                               = 'Catppuccin Mocha'
+config.default_workspace                          = "~"
+config.font                                       = wezterm.font({ family = 'IosevkaTerm Nerd Font' })
+config.font_size                                  = 14
+config.front_end                                  = "WebGpu"
+config.leader                                     = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
+config.macos_window_background_blur               = 30
+config.pane_focus_follows_mouse                   = true
+config.scrollback_lines                           = 5000
+config.set_environment_variables                  = { PATH = '/opt/homebrew/bin:' .. os.getenv('PATH') }
+config.show_new_tab_button_in_tab_bar             = false
+config.status_update_interval                     = 500
+config.switch_to_last_active_tab_when_closing_tab = true
+config.tab_bar_at_bottom                          = false
+config.use_fancy_tab_bar                          = false
+config.window_background_opacity                  = 0.9
+config.unix_domains                               = { { name = 'unix' } }
 
-config.window_background_opacity = 0.9
-config.macos_window_background_blur = 30
-config.window_decorations = "INTEGRATED_BUTTONS | RESIZE"
+-- SSH detection: change pane background via OSC 11 escape sequence
+-- This avoids set_config_overrides which triggers false output detection
+local ssh_pane_state = {}
+local SSH_BG = '#3d1a1a'
+local DEFAULT_BG = '#1e1e2e'  -- Catppuccin Mocha base
 
-local shells = { zsh = true, bash = true, fish = true, sh = true, dash = true, nu = true, pwsh = true }
+wezterm.on('update-status', function(_, pane)
+  local pane_id = tostring(pane:pane_id())
+  local is_ssh = utils.is_ssh(pane)
+  local prev_state = ssh_pane_state[pane_id]
 
-local function is_shell(tab)
-  local process = tab.active_pane and tab.active_pane.foreground_process_name or ''
-  process = process:match('([^/\\]+)$') or process
-  return shells[process] ~= nil
-end
-
-local function tab_cwd(tab)
-  if not is_shell(tab) then return '' end
-  local cwd = tab.active_pane and tab.active_pane.current_working_dir
-  if cwd then
-    local path = (cwd.file_path or tostring(cwd):gsub('file://[^/]*', '')):gsub("/$", "")
-    if path == wezterm.home_dir then return '~' end
-    -- TODO: fish compression
-    return path:gsub("^" .. wezterm.home_dir .. "/", "")
+  -- Only inject when state changes
+  if prev_state ~= is_ssh then
+    ssh_pane_state[pane_id] = is_ssh
+    local color = is_ssh and SSH_BG or DEFAULT_BG
+    pane:inject_output('\x1b]11;' .. color .. '\x1b\\')
   end
-end
+end)
 
 tabline.setup({
   options = {
@@ -82,12 +91,14 @@ tabline.setup({
       {
         'process',
         icons_only = true,
-        cond = function(tab) return is_shell(tab) end
+        cond = function(tab) return utils.is_shell(tab) end,
+        fmt = utils.fmt_process,
       },
       {
         'process',
         icons_only = false,
-        cond = function(tab) return not is_shell(tab) end
+        cond = function(tab) return not utils.is_shell(tab) end,
+        fmt = utils.fmt_process,
       },
       {
         "zoomed",
@@ -110,17 +121,18 @@ tabline.setup({
       {
         'process',
         icons_only = true,
-        cond = function(tab) return is_shell(tab) end,
-        padding = { left = 1, right = 0 }
+        cond = function(tab) return utils.is_shell(tab) end,
+        padding = { left = 1, right = 0 },
+        fmt = utils.fmt_process,
       },
       {
         'process',
         icons_only = false,
-        cond = function(tab) return not is_shell(tab) end,
-        padding = { left = 1, right = 0 }
-
+        cond = function(tab) return not utils.is_shell(tab) end,
+        padding = { left = 1, right = 0 },
+        fmt = utils.fmt_process,
       },
-      tab_cwd,
+      utils.tab_cwd,
       { 'output', icon_no_output = '',                  padding = { left = 1, right = 0 } },
       { 'zoomed', icon = wezterm.nerdfonts.oct_zoom_in, padding = 0 },
     },
@@ -138,148 +150,17 @@ tabline.setup({
       },
     },
   },
-  extensions = { 'resurrect', 'smart_workspace_switcher', 'quick_domains' },
+  extensions = { 'resurrect', 'smart_workspace_switcher' },
 })
 
+tabline.apply_to_config(config)
+config.window_decorations = "INTEGRATED_BUTTONS | RESIZE"
 
-config.set_environment_variables = {
-  PATH = '/opt/homebrew/bin:' .. os.getenv('PATH')
-}
+keybindings.apply_to_config(config)
 
-config.leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
+workspace_switcher.apply_to_config(config)
+workspace_switcher.zoxide_path = "/opt/homebrew/bin/zoxide"
 
-local function move_pane(key, direction)
-  return {
-    key = key,
-    mods = 'LEADER',
-    action = wezterm.action.ActivatePaneDirection(direction),
-  }
-end
-
-local function resize_pane(key, direction)
-  return {
-    key = key,
-    action = wezterm.action.AdjustPaneSize { direction, 3 }
-  }
-end
-
-config.key_tables = {
-  resize_mode = {
-    resize_pane('DownArrow', 'Down'),
-    resize_pane('UpArrow', 'Up'),
-    resize_pane('LeftArrow', 'Left'),
-    resize_pane('RightArrow', 'Right'),
-  },
-}
-
-config.mouse_bindings = {
-  {
-    event = { Down = { streak = 3, button = 'Left' } },
-    action = wezterm.action.SelectTextAtMouseCursor 'SemanticZone',
-  },
-  -- Override default click to only select text, not open links
-  {
-    event = { Up = { streak = 1, button = 'Left' } },
-    mods = 'NONE',
-    action = wezterm.action.CompleteSelection 'ClipboardAndPrimarySelection',
-  },
-  -- CMD+click to open hyperlinks
-  {
-    event = { Up = { streak = 1, button = 'Left' } },
-    mods = 'SUPER',
-    action = wezterm.action.OpenLinkAtMouseCursor,
-  },
-  -- Disable the Down event to avoid conflicts
-  {
-    event = { Down = { streak = 1, button = 'Left' } },
-    mods = 'SUPER',
-    action = wezterm.action.Nop,
-  },
-}
-
-config.keys = {
-  { key = 'LeftArrow',  mods = 'SUPER', action = wezterm.action.ActivateTabRelative(-1) },
-  { key = 'RightArrow', mods = 'SUPER', action = wezterm.action.ActivateTabRelative(1) },
-  { key = "Enter",      mods = "SHIFT", action = wezterm.action { SendString = "\x1b\r" } },
-  {
-    key = 't',
-    mods = 'LEADER',
-    action = wezterm.action.PromptInputLine {
-      description = 'Enter new name for tab',
-      action = wezterm.action_callback(
-        function(window, _, line)
-          if line then
-            window:active_tab():set_title(line)
-          end
-        end
-      ),
-    },
-  },
-  {
-    key = 'UpArrow',
-    mods = 'SHIFT',
-    action = wezterm.action.ScrollToPrompt(-1)
-  },
-  {
-    key = 'DownArrow',
-    mods = 'SHIFT',
-    action = wezterm.action.ScrollToPrompt(1)
-  },
-  {
-    key = 'a',
-    -- When we're in leader mode _and_ CTRL + A is pressed...
-    -- Actually send CTRL + A key to the terminal
-    mods = 'LEADER|CTRL',
-    action = wezterm.action.SendKey { key = 'a', mods = 'CTRL' },
-  },
-  {
-    key = 'r',
-    mods = 'LEADER',
-    action = wezterm.action.ActivateKeyTable {
-      name = 'resize_mode',
-      one_shot = false,
-      timeout_milliseconds = 1000,
-    }
-  },
-  {
-    key = 'z',
-    mods = 'LEADER',
-    action = wezterm.action.TogglePaneZoomState,
-  },
-  {
-    key = '"',
-    mods = 'LEADER',
-    action = wezterm.action.SplitHorizontal { domain = 'CurrentPaneDomain' },
-  },
-  {
-    key = '%',
-    mods = 'LEADER',
-    action = wezterm.action.SplitVertical { domain = 'CurrentPaneDomain' },
-  },
-  move_pane('DownArrow', 'Down'),
-  move_pane('UpArrow', 'Up'),
-  move_pane('LeftArrow', 'Left'),
-  move_pane('RightArrow', 'Right'),
-  {
-    key = ',',
-    mods = 'SUPER',
-    action = wezterm.action.SpawnCommandInNewTab {
-      cwd = wezterm.home_dir,
-      args = { 'code', wezterm.config_file },
-    },
-  },
-  -- Sends ESC + b and ESC + f sequence, which is used
-  -- for telling your shell to jump back/forward.
-  {
-    key = 'LeftArrow',
-    mods = 'OPT',
-    action = wezterm.action.SendString '\x1bb',
-  },
-  {
-    key = 'RightArrow',
-    mods = 'OPT',
-    action = wezterm.action.SendString '\x1bf',
-  }
-}
+resurrect.apply_to_config(config)
 
 return config
