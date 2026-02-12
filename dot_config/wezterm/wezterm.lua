@@ -25,6 +25,7 @@ config.switch_to_last_active_tab_when_closing_tab = true
 config.tab_bar_at_bottom                          = false
 config.use_fancy_tab_bar                          = false
 config.window_background_opacity                  = 0.9
+config.exec_domains                               = utils.compute_docker_domains()
 config.unix_domains                               = { { name = 'unix' } }
 
 -- SSH detection: change pane background via OSC 11 escape sequence
@@ -137,7 +138,7 @@ tabline.setup({
       { 'zoomed', icon = wezterm.nerdfonts.oct_zoom_in, padding = 0 },
     },
     tabline_w = { 'workspace' },
-    tabline_x = { 'hostname', 'ram', 'cpu' },
+    tabline_x = { utils.hostname, 'ram', 'cpu' },
     tabline_y = { 'battery' },
     tabline_z = {
       'domain',

@@ -191,8 +191,8 @@ fi
 
 # Prevent duplicate PATH entries (zsh feature)
 typeset -U path
-path=("$HOME/go/bin" "$HOME/.local/bin" "$HOME/.atuin/bin" $path)
-# export NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem
+path=("$HOME/go/bin" "$HOME/.local/bin" $path)
+export NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem
 
 # Set GPG_TTY to the current terminal only if running in an interactive terminal (tty).
 # This ensures GPG works correctly for pinentry and other interactive operations.
@@ -210,10 +210,12 @@ command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 command -v mise &>/dev/null && eval "$(mise activate zsh)"
 command -v uv &>/dev/null && eval "$(uv generate-shell-completion zsh)"
 command -v uvx &>/dev/null && eval "$(uvx --generate-shell-completion zsh)"
+command -v terragrunt &>/dev/null && export TG_PROVIDER_CACHE=1
+command -v flux >/dev/null && . <(flux completion zsh)
 #command -v starship &>/dev/null && eval "$(starship init zsh)"
 
-# [ -f "$HOME/.atuin/bin/env" ] && source "$HOME/.atuin/bin/env"
 command -v atuin &>/dev/null && eval "$(atuin init zsh --disable-up-arrow --disable-ctrl-r)"
+
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
