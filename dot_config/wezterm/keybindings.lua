@@ -66,6 +66,14 @@ function M.apply_to_config(config)
     action = wezterm.action.Nop,
   })
 
+  for i = 1, 8 do
+  table.insert(config.keys, {
+    key = tostring(i),
+    mods = 'LEADER|SUPER',
+    action = wezterm.action.MoveTab(i - 1),
+  })
+  end
+
   -- Show tab navigator = LEADER+w
   table.insert(config.keys, {
     key = 'w',
@@ -246,6 +254,13 @@ function M.apply_to_config(config)
       cwd = wezterm.home_dir,
       args = { 'code', wezterm.config_file },
     },
+  })
+
+  -- Domain launcher = LEADER+D
+  table.insert(config.keys, {
+    key = 'D',
+    mods = 'LEADER|SHIFT',
+    action = act.ShowLauncherArgs { flags = 'FUZZY|DOMAINS' },
   })
 
   -- Jump word backward = OPT+LeftArrow

@@ -1,15 +1,18 @@
 [tools]
-atuin = "latest"
+gh = "latest"
 bat = "latest"
 bun = "latest"
 delta = "latest"
 fzf = "latest"
 lsd = "latest"
 node = "lts/jod"
+"npm:@bitwarden/cli" = "latest"
+"npm:@devcontainers/cli" = "latest"
 ripgrep = "latest"
 usage = "latest"
 uv = "latest"
 zoxide = "latest"
+glab = "latest"
 
 [settings]
 

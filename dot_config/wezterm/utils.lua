@@ -88,6 +88,12 @@ function M.fmt_process(str, tab)
     local pane = tab.active_pane
     if not pane then return str end
 
+    -- Show container name for Docker domains
+    local domain = pane.domain_name or ''
+    if domain:match('^docker:') then
+        return domain:gsub('^docker:', '')
+    end
+
     local full_path = pane.foreground_process_name or ''
 
     for _, alias in ipairs(process_aliases) do
@@ -96,6 +102,85 @@ function M.fmt_process(str, tab)
         end
     end
     return str
+end
+
+-- Hostname: show container name for Docker domains, otherwise system hostname
+function M.hostname(window, pane)
+    if not pane then return wezterm.hostname() end
+    local domain = pane:get_domain_name()
+    if domain and domain:match('^docker:') then
+        return domain:gsub('^docker:', '')
+    end
+    return wezterm.hostname()
+end
+
+-- Find docker in PATH (including homebrew)
+local function find_in_path(cmd)
+    local path = '/opt/homebrew/bin:' .. (os.getenv('PATH') or '')
+    for dir in path:gmatch('[^:]+') do
+        local full = dir .. '/' .. cmd
+        local f = io.open(full)
+        if f then f:close(); return full end
+    end
+    return cmd
+end
+
+local docker = find_in_path('docker')
+
+-- Docker exec domain auto-discovery
+local function docker_list()
+    local containers = {}
+    local success, stdout = wezterm.run_child_process({
+        docker, 'container', 'ls', '--format', '{{.ID}}:{{.Names}}',
+    })
+    if success then
+        for _, line in ipairs(wezterm.split_by_newlines(stdout)) do
+            local id, name = line:match('(.-):(.+)')
+            if id and name then
+                containers[id] = name
+            end
+        end
+    end
+    return containers
+end
+
+local function make_docker_label_func(id)
+    return function(name)
+        local success, stdout = wezterm.run_child_process({
+            docker, 'inspect', '--format', '{{.State.Running}}', id,
+        })
+        local running = stdout == 'true\n'
+        local color = running and 'Green' or 'Red'
+        return wezterm.format({
+            { Foreground = { AnsiColor = color } },
+            { Text = 'docker: ' .. name },
+        })
+    end
+end
+
+local function make_docker_fixup_func(id)
+    return function(cmd)
+        cmd.args = cmd.args or { '/bin/zsh' }
+        local wrapped = { docker, 'exec', '-it', id }
+        for _, arg in ipairs(cmd.args) do
+            table.insert(wrapped, arg)
+        end
+        cmd.args = wrapped
+        return cmd
+    end
+end
+
+function M.compute_docker_domains()
+    local exec_domains = {}
+    for id, name in pairs(docker_list()) do
+        table.insert(exec_domains,
+            wezterm.exec_domain('docker:' .. name,
+                make_docker_fixup_func(id),
+                make_docker_label_func(id)
+            )
+        )
+    end
+    return exec_domains
 end
 
 return M
