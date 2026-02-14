@@ -3,3 +3,7 @@ skip_global_compinit=1
 {{ end -}}
 
 [ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
+
+if [ "$DEVCONTAINER" = "true" ]; then
+  export BEADS_NO_DAEMON=1
+fi
