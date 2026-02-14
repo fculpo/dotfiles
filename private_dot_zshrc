@@ -20,7 +20,7 @@ ZIM_HOME=${XDG_CACHE_HOME}/zim
 # Download zimfw plugin manager if missing.
 if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
   curl -fsSL --create-dirs -o ${ZIM_HOME}/zimfw.zsh \
-      https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
+    https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
 fi
 
 # Install missing modules and update ${ZIM_HOME}/init.zsh if missing or outdated.
@@ -86,7 +86,7 @@ done
 unset key
 
 # Enable bash completion compatibility.
-# After this, you can use complete -F and other bash completion commands in zsh, 
+# After this, you can use complete -F and other bash completion commands in zsh,
 # which is useful for tools that only provide bash completion scripts (like terraform, kubectl, etc).
 autoload -U +X bashcompinit && bashcompinit
 
@@ -124,7 +124,7 @@ setopt NO_FLOW_CONTROL        # Disable Ctrl+S/Ctrl+Q
 setopt NO_LIST_BEEP           # No beep on completion list
 
 zstyle ':completion:*' verbose true
-zstyle ':completion:*' menu select=0 search
+zstyle ':completion:*' menu select
 zstyle ':completion:::::' completer _extensions _complete _approximate
 
 # Complete the alias when _expand_alias is used as a function
@@ -191,7 +191,8 @@ fi
 
 # Prevent duplicate PATH entries (zsh feature)
 typeset -U path
-path=("$HOME/go/bin" "$HOME/.local/bin" $path)
+path=("/opt/homebrew/bin" "$HOME/.local/bin" "$HOME/go/bin" $path)
+
 export NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem
 
 # Set GPG_TTY to the current terminal only if running in an interactive terminal (tty).
@@ -212,10 +213,6 @@ command -v uv &>/dev/null && eval "$(uv generate-shell-completion zsh)"
 command -v uvx &>/dev/null && eval "$(uvx --generate-shell-completion zsh)"
 command -v terragrunt &>/dev/null && export TG_PROVIDER_CACHE=1
 command -v flux >/dev/null && . <(flux completion zsh)
-#command -v starship &>/dev/null && eval "$(starship init zsh)"
-
-command -v atuin &>/dev/null && eval "$(atuin init zsh --disable-up-arrow --disable-ctrl-r)"
-
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

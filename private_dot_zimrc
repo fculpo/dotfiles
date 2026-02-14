@@ -23,7 +23,7 @@ zmodule romkatv/powerlevel10k --use degit
 zmodule wfxr/forgit
 zmodule joke/zim-yq
 zmodule ohmyzsh/ohmyzsh --root plugins/pass
-zmodule ohmyzsh/ohmyzsh --root plugins/sudo
+# zmodule ohmyzsh/ohmyzsh --root plugins/sudo
 zmodule reegnz/jq-zsh-plugin
 zmodule joke/zim-gopass
 zmodule joke/zim-helm
