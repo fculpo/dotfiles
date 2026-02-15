@@ -19,8 +19,15 @@
 {{-   $email = promptString "email" $email -}}
 {{- end -}}
 
+{{- $gpgkey := "" -}}
+{{- if hasKey . "gpgkey" -}}
+{{-   $gpgkey = .gpgkey -}}
+{{- else if $interactive -}}
+{{-   $gpgkey = promptString "gpgkey" -}}
+{{- end -}}
+
 {{- if $interactive -}}
-{{-   writeToStdout "💡 Tip: you can re-enter your name and email with `chezmoi init --data=false`.\n" -}}
+{{-   writeToStdout "💡 Tip: you can reset datas with `chezmoi init --data=false`.\n" -}}
 {{- end -}}
 
 {{- $osid := .chezmoi.os -}}
@@ -34,3 +41,4 @@ data:
   name: {{ $name | quote }}
   email: {{ $email | quote }}
   osid: {{ $osid | quote }}
+  gpgkey: {{ $gpgkey | quote }}

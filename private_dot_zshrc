@@ -189,11 +189,12 @@ if [ -d "$HOME/.zsh.d" ]; then
     done
 fi
 
+export PATH="$HOME/.local/bin:$HOME/go/bin:$PATH"
 # Prevent duplicate PATH entries (zsh feature)
 typeset -U path
 path=("/opt/homebrew/bin" "$HOME/.local/bin" "$HOME/go/bin" $path)
 
-export NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem
+# export NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem
 
 # Set GPG_TTY to the current terminal only if running in an interactive terminal (tty).
 # This ensures GPG works correctly for pinentry and other interactive operations.
@@ -203,7 +204,7 @@ if [[ -t 1 ]]; then
 fi
 
 [ -f "$HOME/.local/bin/env" ] && source "$HOME/.local/bin/env"
-[ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+[ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv zsh)"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 [ -f "$HOME/.config/wezterm/shell-integration.sh" ] && source "$HOME/.config/wezterm/shell-integration.sh"
 

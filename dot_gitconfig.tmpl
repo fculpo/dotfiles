@@ -1,6 +1,9 @@
 [user]
     name = Fabien Culpo
     email = {{ .email | quote }}
+{{- if and (hasKey . "gpgkey") .gpgkey }}
+    signingkey = {{ .gpgkey }}
+{{- end }}
 
 [core]
     pager = delta
@@ -28,7 +31,29 @@
     autoSetupRemote = true
 
 [worktree]
-    useRelativePaths = true
+    useRelativePaths = false
 
-[includeIf "gitdir:/workspace/"]
-    path = ~/.gitconfig-work
+[commit]
+{{- if and (hasKey . "gpgkey") .gpgkey }}
+    gpgsign = true
+{{- end }}
+
+[tag]
+{{- if and (hasKey . "gpgkey") .gpgkey }}
+    gpgsign = true
+{{- end }}
+
+{{ if eq .chezmoi.os "darwin" -}}
+[gpg]
+    program = /opt/homebrew/bin/gpg
+
+{{ end -}}
+
+[include]
+    path = ~/.gitconfig.local
+
+[credential "https://github.com"]
+    helper = !/usr/bin/gh auth git-credential
+
+[credential "https://gist.github.com"]
+    helper = !/usr/bin/gh auth git-credential
