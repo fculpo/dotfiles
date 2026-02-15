@@ -1,8 +1,15 @@
 {{ if eq .osid "linux-ubuntu" -}}
 skip_global_compinit=1
-{{ end -}}
+{{ end }}
 
 [ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
+
+{{ if eq .chezmoi.os "darwin" -}}
+# ICU flags for Go CGO builds (e.g. beads/dolt)
+export CGO_CFLAGS="-I/opt/homebrew/opt/icu4c@78/include"
+export CGO_CXXFLAGS="-I/opt/homebrew/opt/icu4c@78/include"
+export CGO_LDFLAGS="-L/opt/homebrew/opt/icu4c@78/lib -licui18n -licuuc -licudata"
+{{ end }}
 
 if [ "$DEVCONTAINER" = "true" ]; then
   export BEADS_NO_DAEMON=1

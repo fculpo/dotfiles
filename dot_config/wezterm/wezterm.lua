@@ -28,22 +28,24 @@ config.window_background_opacity                  = 0.9
 config.exec_domains                               = utils.compute_docker_domains()
 config.unix_domains                               = { { name = 'unix' } }
 
--- SSH detection: change pane background via OSC 11 escape sequence
+-- Remote detection: change pane background via OSC 11 escape sequence
 -- This avoids set_config_overrides which triggers false output detection
-local ssh_pane_state = {}
-local SSH_BG = '#3d1a1a'
+local pane_bg_state = {}
 local DEFAULT_BG = '#1e1e2e'  -- Catppuccin Mocha base
+local SSH_BG     = '#3d1a1a'  -- subtle red tint
+local DOCKER_BG  = '#1e1e38'  -- subtle blue tint
 
 wezterm.on('update-status', function(_, pane)
   local pane_id = tostring(pane:pane_id())
+  local domain = pane:get_domain_name() or ''
+  local is_docker = domain:match('^docker:') ~= nil
   local is_ssh = utils.is_ssh(pane)
-  local prev_state = ssh_pane_state[pane_id]
 
-  -- Only inject when state changes
-  if prev_state ~= is_ssh then
-    ssh_pane_state[pane_id] = is_ssh
-    local color = is_ssh and SSH_BG or DEFAULT_BG
-    pane:inject_output('\x1b]11;' .. color .. '\x1b\\')
+  local bg = (is_docker and DOCKER_BG) or (is_ssh and SSH_BG) or DEFAULT_BG
+
+  if pane_bg_state[pane_id] ~= bg then
+    pane_bg_state[pane_id] = bg
+    pane:inject_output('\x1b]11;' .. bg .. '\x1b\\')
   end
 end)
 
