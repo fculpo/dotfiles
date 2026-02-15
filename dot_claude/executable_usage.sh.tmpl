@@ -23,18 +23,23 @@ make_bar() {
 fetch_usage() {
   # Use cached response if < 180 seconds old
   if [[ -f "$CACHE_FILE" ]]; then
-    AGE=$(($(date +%s) - $(stat -c '%Y' "$CACHE_FILE")))
+    AGE=$(($(date +%s) - $(stat {{ if eq .chezmoi.os "darwin" }}-f '%m'{{ else }}-c '%Y'{{ end }} "$CACHE_FILE")))
     [[ $AGE -lt 180 ]] && return 0
   fi
 
   # Rate limit: only try API once per 30 seconds
   if [[ -f "$LOCK_FILE" ]]; then
-    LOCK_AGE=$(($(date +%s) - $(stat -c '%Y' "$LOCK_FILE")))
+    LOCK_AGE=$(($(date +%s) - $(stat {{ if eq .chezmoi.os "darwin" }}-f '%m'{{ else }}-c '%Y'{{ end }} "$LOCK_FILE")))
     [[ $LOCK_AGE -lt 30 ]] && return 0
   fi
   touch "$LOCK_FILE"
 
+{{- if eq .chezmoi.os "darwin" }}
+  CREDS="$(security find-generic-password -s 'Claude Code-credentials' -w 2>/dev/null)"
+  TOKEN="$(echo "$CREDS" | jq -r '.claudeAiOauth.accessToken // empty' 2>/dev/null)"
+{{- else }}
   TOKEN="$(jq -r '.claudeAiOauth.accessToken // empty' ~/.claude/.credentials.json 2>/dev/null)"
+{{- end }}
   [[ -z "$TOKEN" ]] && return 1
 
   RESPONSE=$(curl -s --max-time 3 "https://api.anthropic.com/api/oauth/usage" \
