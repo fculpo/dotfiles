@@ -1,0 +1,97 @@
+{
+  "version": 3,
+  "lines": [
+    [
+      {
+        "id": "59cc2ea6-acd4-45fb-96ba-85b58ea7891d",
+        "type": "current-working-dir",
+        "backgroundColor": "bgWhite",
+        "metadata": {
+          "fishStyle": "true"
+        }
+      },
+      {
+        "id": "04990bfd-b8ba-48ad-a20d-5cddd1fc96c2",
+        "type": "git-branch",
+        "backgroundColor": "bgBrightCyan"
+      },
+      {
+        "id": "5601a011-a71a-4ee1-8052-72c14435ef9b",
+        "type": "git-worktree",
+        "backgroundColor": "bgMagenta"
+      },
+      {
+        "id": "4805da4f-9e10-4029-a893-e50c3bb7f9e6",
+        "type": "git-changes",
+        "backgroundColor": "bgBrightYellow"
+      }
+    ],
+    [
+      {
+        "id": "1",
+        "type": "model",
+        "color": "cyan"
+      },
+      {
+        "id": "3",
+        "type": "context-percentage",
+        "color": "brightBlack",
+        "metadata": {
+          "inverse": "true"
+        }
+      },
+      {
+        "id": "5",
+        "type": "block-timer",
+        "color": "magenta"
+      },
+      {
+        "id": "7",
+        "type": "session-cost",
+        "color": "yellow"
+      }
+    ],
+    [
+      {
+        "id": "usage-session",
+        "type": "custom-command",
+        "backgroundColor": "bgBrightBlack",
+        "commandPath": "~/.claude/usage.sh session",
+        "preserveColors": false
+      },
+      {
+        "id": "usage-weekly",
+        "type": "custom-command",
+        "backgroundColor": "bgBrightBlack",
+        "commandPath": "~/.claude/usage.sh weekly",
+        "preserveColors": false
+      },
+      {
+        "id": "usage-sonnet",
+        "type": "custom-command",
+        "backgroundColor": "bgBrightBlack",
+        "commandPath": "~/.claude/usage.sh sonnet",
+        "preserveColors": false
+      }
+    ]
+  ],
+  "flexMode": "full-minus-40",
+  "compactThreshold": 60,
+  "colorLevel": 2,
+  "defaultPadding": " ",
+  "inheritSeparatorColors": false,
+  "globalBold": false,
+  "powerline": {
+    "enabled": true,
+    "separators": [
+      ""
+    ],
+    "separatorInvertBackground": [
+      false
+    ],
+    "startCaps": [],
+    "endCaps": [],
+    "theme": "minimal",
+    "autoAlign": true
+  }
+}
