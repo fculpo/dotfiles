@@ -81,6 +81,13 @@ function M.apply_to_config(config)
     action = act.ShowTabNavigator,
   })
 
+  -- Close pane = LEADER+x
+  table.insert(config.keys, {
+    key = 'x',
+    mods = 'LEADER',
+    action = act.CloseCurrentPane { confirm = true },
+  })
+
   -- Close tab = LEADER+&
   table.insert(config.keys, {
     key = '&',
