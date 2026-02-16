@@ -11,7 +11,11 @@ local workspace_switcher = wezterm.plugin.require("https://github.com/MLFlexer/s
 -- config.default_gui_startup_args                   = { 'connect', 'unix' }
 config.color_scheme                               = 'Catppuccin Mocha'
 config.default_workspace                          = "~"
-config.font                                       = wezterm.font({ family = 'IosevkaTerm Nerd Font' })
+config.font                                       = wezterm.font_with_fallback({
+                                                       'IosevkaTerm Nerd Font',
+                                                       'Symbols Nerd Font Mono',
+                                                       'Noto Sans Bamum',
+                                                     })
 config.font_size                                  = 14
 config.front_end                                  = "WebGpu"
 config.leader                                     = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
@@ -25,6 +29,11 @@ config.switch_to_last_active_tab_when_closing_tab = true
 config.tab_bar_at_bottom                          = false
 config.use_fancy_tab_bar                          = false
 config.window_background_opacity                  = 0.9
+
+wezterm.on('gui-startup', function(cmd)
+  local _, _, window = wezterm.mux.spawn_window(cmd or {})
+  window:gui_window():maximize()
+end)
 config.exec_domains                               = utils.compute_docker_domains()
 config.unix_domains                               = { { name = 'unix' } }
 
