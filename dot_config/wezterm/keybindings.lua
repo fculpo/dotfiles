@@ -66,13 +66,28 @@ function M.apply_to_config(config)
     action = wezterm.action.Nop,
   })
 
+  -- Move current tab to position N = LEADER+SUPER+N
   for i = 1, 8 do
-  table.insert(config.keys, {
-    key = tostring(i),
-    mods = 'LEADER|SUPER',
-    action = wezterm.action.MoveTab(i - 1),
-  })
+    table.insert(config.keys, {
+      key = tostring(i),
+      mods = 'LEADER|SUPER',
+      action = wezterm.action.MoveTab(i - 1),
+    })
   end
+
+  -- Move current tab left = LEADER+SUPER+LeftArrow
+  table.insert(config.keys, {
+    key = 'LeftArrow',
+    mods = 'LEADER|SUPER',
+    action = wezterm.action.MoveTabRelative(-1),
+  })
+
+  -- Move current tab right = LEADER+SUPER+RightArrow
+  table.insert(config.keys, {
+    key = 'RightArrow',
+    mods = 'LEADER|SUPER',
+    action = wezterm.action.MoveTabRelative(1),
+  })
 
   -- Show tab navigator = LEADER+w
   table.insert(config.keys, {
