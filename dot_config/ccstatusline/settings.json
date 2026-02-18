@@ -23,7 +23,7 @@
       },
       {
         "id": "4805da4f-9e10-4029-a893-e50c3bb7f9e6",
-        "type": "git-changes",
+        "type": "session-cost",
         "backgroundColor": "bgBrightYellow"
       }
     ],
@@ -42,15 +42,12 @@
         }
       },
       {
-        "id": "5",
-        "type": "block-timer",
-        "color": "magenta",
-        "merge": true
-      },
-      {
         "id": "7",
-        "type": "session-cost",
-        "color": "yellow"
+        "type": "block-timer",
+        "color": "yellow",
+        "metadata": {
+          "display": "progress"
+        }
       }
     ],
     [
