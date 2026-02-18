@@ -44,17 +44,19 @@ config.unix_domains                               = { { name = 'unix' } }
 -- Remote detection: change pane background via OSC 11 escape sequence
 -- This avoids set_config_overrides which triggers false output detection
 local pane_bg_state = {}
-local DEFAULT_BG = '#1e1e2e'  -- Catppuccin Mocha base
-local SSH_BG     = '#3d1a1a'  -- subtle red tint
-local DOCKER_BG  = '#1e1e38'  -- subtle blue tint
+local DEFAULT_BG  = '#1e1e2e'  -- Catppuccin Mocha base
+local SSH_BG      = '#3d1a1a'  -- subtle red tint
+local DOCKER_BG   = '#1e1e38'  -- subtle blue tint
+local SANDBOX_BG  = '#2e2418'  -- subtle orange tint
 
 wezterm.on('update-status', function(_, pane)
   local pane_id = tostring(pane:pane_id())
   local domain = pane:get_domain_name() or ''
   local is_docker = domain:match('^docker:') ~= nil
   local is_ssh = utils.is_ssh(pane)
+  local is_sandbox = (pane:get_user_vars() or {}).sandbox == '1'
 
-  local bg = (is_docker and DOCKER_BG) or (is_ssh and SSH_BG) or DEFAULT_BG
+  local bg = (is_sandbox and SANDBOX_BG) or (is_docker and DOCKER_BG) or (is_ssh and SSH_BG) or DEFAULT_BG
 
   if pane_bg_state[pane_id] ~= bg then
     pane_bg_state[pane_id] = bg
