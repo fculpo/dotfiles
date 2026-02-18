@@ -116,7 +116,7 @@ end
 
 -- Find docker in PATH (including homebrew)
 local function find_in_path(cmd)
-    local path = '/opt/homebrew/bin:' .. (os.getenv('PATH') or '')
+    local path = wezterm.home_dir .. '/.local/bin:/opt/homebrew/bin:' .. (os.getenv('PATH') or '')
     for dir in path:gmatch('[^:]+') do
         local full = dir .. '/' .. cmd
         local f = io.open(full)
@@ -181,6 +181,35 @@ function M.compute_docker_domains()
         )
     end
     return exec_domains
+end
+
+-- Sandbox exec domain for Claude Code
+local claude_sandbox = find_in_path('claude-sandbox')
+
+local function make_sandbox_fixup_func()
+    return function(cmd)
+        local cwd = cmd.cwd or wezterm.home_dir
+        cmd.args = { claude_sandbox, '--project-dir', cwd }
+        return cmd
+    end
+end
+
+local function make_sandbox_label_func()
+    return function(_name)
+        return wezterm.format({
+            { Foreground = { AnsiColor = 'Yellow' } },
+            { Text = wezterm.nerdfonts.md_lock .. ' sandbox:claude' },
+        })
+    end
+end
+
+function M.compute_sandbox_domains()
+    return {
+        wezterm.exec_domain('sandbox:claude',
+            make_sandbox_fixup_func(),
+            make_sandbox_label_func()
+        ),
+    }
 end
 
 return M
