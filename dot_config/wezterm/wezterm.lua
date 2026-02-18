@@ -22,7 +22,7 @@ config.leader                                     = { key = 'a', mods = 'CTRL', 
 config.macos_window_background_blur               = 30
 config.pane_focus_follows_mouse                   = true
 config.scrollback_lines                           = 5000
-config.set_environment_variables                  = { PATH = '/opt/homebrew/bin:' .. os.getenv('PATH') }
+config.set_environment_variables                  = { PATH = wezterm.home_dir .. '/.local/bin:/opt/homebrew/bin:' .. os.getenv('PATH') }
 config.show_new_tab_button_in_tab_bar             = false
 config.status_update_interval                     = 500
 config.switch_to_last_active_tab_when_closing_tab = true
@@ -34,7 +34,11 @@ wezterm.on('gui-startup', function(cmd)
   local _, _, window = wezterm.mux.spawn_window(cmd or {})
   window:gui_window():maximize()
 end)
-config.exec_domains                               = utils.compute_docker_domains()
+local exec_domains = utils.compute_docker_domains()
+for _, domain in ipairs(utils.compute_sandbox_domains()) do
+    table.insert(exec_domains, domain)
+end
+config.exec_domains                               = exec_domains
 config.unix_domains                               = { { name = 'unix' } }
 
 -- Remote detection: change pane background via OSC 11 escape sequence
