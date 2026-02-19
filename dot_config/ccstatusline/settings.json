@@ -13,18 +13,12 @@
       {
         "id": "04990bfd-b8ba-48ad-a20d-5cddd1fc96c2",
         "type": "git-branch",
-        "backgroundColor": "bgBrightCyan",
-        "merge": true
+        "backgroundColor": "bgBrightCyan"
       },
       {
         "id": "5601a011-a71a-4ee1-8052-72c14435ef9b",
         "type": "git-worktree",
         "backgroundColor": "bgMagenta"
-      },
-      {
-        "id": "4805da4f-9e10-4029-a893-e50c3bb7f9e6",
-        "type": "session-cost",
-        "backgroundColor": "bgBrightYellow"
       }
     ],
     [
@@ -42,11 +36,11 @@
         }
       },
       {
-        "id": "7",
+        "id": "5",
         "type": "block-timer",
-        "color": "yellow",
+        "color": "magenta",
         "metadata": {
-          "display": "progress"
+          "display": "progress-short"
         }
       }
     ],
@@ -74,7 +68,7 @@
       }
     ]
   ],
-  "flexMode": "full-until-compact",
+  "flexMode": "full-minus-40",
   "compactThreshold": 60,
   "colorLevel": 2,
   "defaultPadding": " ",
