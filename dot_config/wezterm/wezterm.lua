@@ -28,7 +28,8 @@ config.status_update_interval                     = 500
 config.switch_to_last_active_tab_when_closing_tab = true
 config.tab_bar_at_bottom                          = false
 config.use_fancy_tab_bar                          = false
-config.window_background_opacity                  = 0.9
+config.window_background_opacity                  = 0.95
+config.inactive_pane_hsb                          = { saturation = 0.7, brightness = 0.75 }
 
 wezterm.on('gui-startup', function(cmd)
   local _, _, window = wezterm.mux.spawn_window(cmd or {})
@@ -172,6 +173,7 @@ tabline.setup({
 })
 
 tabline.apply_to_config(config)
+config.tab_max_width = 128
 config.window_decorations = "INTEGRATED_BUTTONS | RESIZE"
 
 keybindings.apply_to_config(config)
