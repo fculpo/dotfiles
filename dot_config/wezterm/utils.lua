@@ -80,7 +80,7 @@ end
 -- Process display name aliases
 -- Each entry: { path_match = "pattern", name_match = "pattern", display = "name" }
 local process_aliases = {
-    { path_match = 'claude', name_match = '^%d+%.%d+%.%d+$', display = 'claude' },
+    { path_match = 'claude', name_match = '^%d+%.%d+%.%d+$', display = 'claude', use_title = true },
 }
 
 -- Format process name with aliases (for tabline fmt)
@@ -98,6 +98,10 @@ function M.fmt_process(str, tab)
 
     for _, alias in ipairs(process_aliases) do
         if full_path:match(alias.path_match) and str:match(alias.name_match) then
+            if alias.use_title then
+                local title = (pane.title or ''):match('%S') and pane.title
+                if title then return title end
+            end
             return alias.display
         end
     end
