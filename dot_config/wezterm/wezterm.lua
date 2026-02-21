@@ -21,7 +21,7 @@ config.front_end                                  = "WebGpu"
 config.leader                                     = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
 config.macos_window_background_blur               = 30
 config.pane_focus_follows_mouse                   = true
-config.scrollback_lines                           = 5000
+config.scrollback_lines                           = 100000
 config.set_environment_variables                  = { PATH = wezterm.home_dir .. '/.local/bin:/opt/homebrew/bin:' .. os.getenv('PATH') }
 config.show_new_tab_button_in_tab_bar             = false
 config.status_update_interval                     = 500
