@@ -8,7 +8,7 @@ local tabline            = wezterm.plugin.require("https://github.com/michaelbru
 local workspace_switcher = wezterm.plugin.require("https://github.com/MLFlexer/smart_workspace_switcher.wezterm")
 
 
--- config.default_gui_startup_args                   = { 'connect', 'unix' }
+config.default_gui_startup_args                   = { 'connect', 'unix' }
 config.color_scheme                               = 'Catppuccin Mocha'
 config.default_workspace                          = "~"
 config.font                                       = wezterm.font_with_fallback({
@@ -21,10 +21,10 @@ config.front_end                                  = "WebGpu"
 config.leader                                     = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
 config.macos_window_background_blur               = 30
 config.pane_focus_follows_mouse                   = true
-config.scrollback_lines                           = 100000
+config.scrollback_lines                           = 10000
 config.set_environment_variables                  = { PATH = wezterm.home_dir .. '/.local/bin:/opt/homebrew/bin:' .. os.getenv('PATH') }
 config.show_new_tab_button_in_tab_bar             = false
-config.status_update_interval                     = 500
+config.status_update_interval                     = 1000
 config.switch_to_last_active_tab_when_closing_tab = true
 config.tab_bar_at_bottom                          = false
 config.use_fancy_tab_bar                          = false
