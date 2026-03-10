@@ -42,9 +42,12 @@ fetch_usage() {
 {{- end }}
   [[ -z "$TOKEN" ]] && return 1
 
+  CC_VERSION="$(claude --version 2>/dev/null | awk '{print $1}')"
   RESPONSE=$(curl -s --max-time 3 "https://api.anthropic.com/api/oauth/usage" \
     -H "Authorization: Bearer $TOKEN" \
-    -H "anthropic-beta: oauth-2025-04-20" 2>/dev/null)
+    -H "anthropic-beta: oauth-2025-04-20" \
+    -H "Content-Type: application/json" \
+    -H "User-Agent: claude-code/${CC_VERSION:-2.1.72}" 2>/dev/null)
 
   [[ -z "$RESPONSE" ]] && return 1
 
