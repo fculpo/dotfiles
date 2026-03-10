@@ -15,7 +15,6 @@ zmodule utility
 # for any caveats.
 
 zmodule joke/zim-mise 
-zmodule direnv
 zmodule fzf
 zmodule smite
 zmodule homebrew
