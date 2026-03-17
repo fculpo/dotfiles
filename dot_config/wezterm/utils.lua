@@ -120,7 +120,7 @@ end
 
 -- Find docker in PATH (including homebrew)
 local function find_in_path(cmd)
-    local path = wezterm.home_dir .. '/.local/bin:/opt/homebrew/bin:' .. (os.getenv('PATH') or '')
+    local path = wezterm.home_dir .. '/.local/bin:/opt/homebrew/bin:/usr/local/bin:' .. (os.getenv('PATH') or '')
     for dir in path:gmatch('[^:]+') do
         local full = dir .. '/' .. cmd
         local f = io.open(full)
