@@ -227,3 +227,6 @@ command -v flux >/dev/null && . <(flux completion zsh)
 
 # airgap shell completion
 eval "$(_AIRGAP_COMPLETE=zsh_source airgap)"
+
+# Disable focus reporting mode (prevents stray escape sequences after Claude Code exits)
+printf '\e[?1004l'

@@ -5,10 +5,10 @@ skip_global_compinit=1
 [ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
 
 {{ if eq .chezmoi.os "darwin" -}}
-# ICU flags for Go CGO builds (e.g. beads/dolt)
-export CGO_CFLAGS="-I/opt/homebrew/opt/icu4c@78/include"
-export CGO_CXXFLAGS="-I/opt/homebrew/opt/icu4c@78/include"
-export CGO_LDFLAGS="-L/opt/homebrew/opt/icu4c@78/lib -licui18n -licuuc -licudata"
+# Ensure macOS SSH agent socket is available
+if [[ -z "$SSH_AUTH_SOCK" && "$OSTYPE" == darwin* ]]; then
+    export SSH_AUTH_SOCK=$(launchctl getenv SSH_AUTH_SOCK)
+fi
 {{ end }}
 
 if [ "$DEVCONTAINER" = "true" ]; then
