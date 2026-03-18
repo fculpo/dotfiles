@@ -77,6 +77,32 @@ function M.tab_cwd(tab)
     return table.concat(compressed, "/")
 end
 
+-- Strip local user@hostname prefix from titles on unix domain
+local cached_local_prefixes = nil
+local function get_local_prefixes()
+    if not cached_local_prefixes then
+        local user = os.getenv('USER') or ''
+        local host = wezterm.hostname()
+        local short_host = host:gsub('%.local$', '')
+        cached_local_prefixes = {}
+        for _, h in ipairs({ host, short_host }) do
+            local prefix = user .. '@' .. h
+            local escaped = prefix:gsub('([%.%-%+])', '%%%1')
+            table.insert(cached_local_prefixes, escaped)
+        end
+    end
+    return cached_local_prefixes
+end
+
+function M.strip_local_userhost(str, domain)
+    if domain ~= 'unix' or not str then return str end
+    for _, pattern in ipairs(get_local_prefixes()) do
+        local stripped = str:gsub('^' .. pattern .. '[:%- ]*', '')
+        if stripped ~= str then return stripped end
+    end
+    return str
+end
+
 -- Process display name aliases
 -- Each entry: { path_match = "pattern", name_match = "pattern", display = "name" }
 local process_aliases = {
@@ -93,6 +119,9 @@ function M.fmt_process(str, tab)
     if domain:match('^docker:') then
         return domain:gsub('^docker:', '')
     end
+
+    -- Strip local user@hostname for unix domain
+    str = M.strip_local_userhost(str, domain)
 
     local full_path = pane.foreground_process_name or ''
 
