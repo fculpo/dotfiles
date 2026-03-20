@@ -1,18 +1,21 @@
 [tools]
-gh = "latest"
+"npm:@bitwarden/cli" = "latest"
+"npm:@devcontainers/cli" = "latest"
+"npm:@google/gemini-cli" = "latest"
 bat = "latest"
 bun = "latest"
 delta = "latest"
 fzf = "latest"
+gh = "latest"
+git-lfs = "latest"
+github-cli = "latest"
+glab = "latest"
 lsd = "latest"
 node = "lts/jod"
-"npm:@bitwarden/cli" = "latest"
-"npm:@devcontainers/cli" = "latest"
 ripgrep = "latest"
 usage = "latest"
 uv = "latest"
 zoxide = "latest"
-glab = "latest"
 
 [settings]
 
