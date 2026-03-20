@@ -224,9 +224,3 @@ command -v flux >/dev/null && . <(flux completion zsh)
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-# airgap shell completion
-eval "$(_AIRGAP_COMPLETE=zsh_source airgap)"
-
-# Disable focus reporting mode (prevents stray escape sequences after Claude Code exits)
-printf '\e[?1004l'
