@@ -262,6 +262,33 @@ function M.apply_to_config(config)
     action = act.TogglePaneZoomState,
   })
 
+  -- Copy mode = ALT+e
+  table.insert(config.keys, {
+    key = 'e',
+    mods = 'ALT',
+    action = wezterm.action.ActivateCopyMode,
+  })
+
+  -- Split right = ALT+v
+  table.insert(config.keys, {
+    key = 'v',
+    mods = 'ALT',
+    action = act.SplitPane {
+      direction = 'Right',
+      size = { Percent = 50 },
+    },
+  })
+
+  -- Split down = ALT+h
+  table.insert(config.keys, {
+    key = 'h',
+    mods = 'ALT',
+    action = act.SplitPane {
+      direction = 'Down',
+      size = { Percent = 50 },
+    },
+  })
+
   -- Move pane bindings
   table.insert(config.keys, move_pane('DownArrow', 'Down'))
   table.insert(config.keys, move_pane('UpArrow', 'Up'))
