@@ -51,6 +51,11 @@ fetch_usage() {
 
   [[ -z "$RESPONSE" ]] && return 1
 
+  # Check for API errors (e.g. missing scopes) — don't cache error responses
+  if echo "$RESPONSE" | jq -e '.type == "error"' >/dev/null 2>&1; then
+    return 1
+  fi
+
   echo "$RESPONSE" > "$CACHE_FILE"
 }
 
