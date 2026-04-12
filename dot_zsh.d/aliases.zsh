@@ -1,5 +1,3 @@
-alias claude="DISABLE_AUTOUPDATER=1 claude"
-
 alias crypto='curl rate.sx' # Get crypto prices
 
 alias h='history'
