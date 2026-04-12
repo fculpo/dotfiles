@@ -213,10 +213,10 @@ fi
 [ -f "$HOME/.local/bin/env" ] && source "$HOME/.local/bin/env"
 [ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv zsh)"
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-[ -f "$HOME/.config/wezterm/shell-integration.sh" ] && source "$HOME/.config/wezterm/shell-integration.sh"
+[[ "$TERM_PROGRAM" == "WezTerm" ]] && [ -f "$HOME/.config/wezterm/shell-integration.sh" ] && source "$HOME/.config/wezterm/shell-integration.sh"
+
 
 command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
-command -v mise &>/dev/null && eval "$(mise activate zsh)"
 command -v uv &>/dev/null && eval "$(uv generate-shell-completion zsh)"
 command -v uvx &>/dev/null && eval "$(uvx --generate-shell-completion zsh)"
 command -v terragrunt &>/dev/null && export TG_PROVIDER_CACHE=1
