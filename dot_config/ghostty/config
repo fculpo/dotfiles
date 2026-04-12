@@ -1,0 +1,35 @@
+# Ghostty Configuration — Thin terminal, Zellij handles multiplexing
+# Reload with Cmd+Shift+,
+
+# Theme
+theme = TokyoNight
+
+# Font
+font-family = IosevkaTerm Nerd Font
+font-family = Symbols Nerd Font Mono
+font-size = 14
+
+# Appearance
+background-opacity = 0.90
+background-blur = 20
+window-theme = dark
+macos-titlebar-style = hidden
+
+# Auto-launch Zellij — attach to existing session or create new one
+command = /opt/homebrew/bin/zellij attach --create
+
+# Shell integration (works inside Zellij-spawned shells)
+shell-integration = detect
+
+# Clipboard
+clipboard-read = allow
+clipboard-write = allow
+
+# Keybindings — clear all, re-add only macOS essentials
+# Everything else passes through to Zellij
+keybind = clear
+keybind = super+c=copy_to_clipboard
+keybind = super+v=paste_from_clipboard
+keybind = super+shift+comma=reload_config
+keybind = super+q=quit
+keybind = super+n=unbind

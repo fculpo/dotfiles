@@ -1,0 +1,70 @@
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="file:~/.config/zellij/plugins/zjstatus.wasm" {
+                // format_left  "{mode}#[fg=black,bg=blue,bold]{session}  #[fg=blue,bg=#181825]{tabs}"
+                format_left  "{mode}#[fg=#181825,bg=#b1bbfa] {session} #[fg=#b1bbfa,bg=#181825]{tabs}"
+                format_center ""
+                format_right "#[fg=#181825,bg=#b1bbfa]{datetime}"
+                format_space "#[bg=#181825]"
+
+                hide_frame_for_single_pane "true"
+
+                mode_normal        "#[fg=#181825,bg=#89b4fa,bold] NORMAL #[fg=#89b4fa,bg=#181825]"
+                mode_tab           "#[fg=#181825,bg=#fab387,bold] TAB #[fg=#fab387,bg=#181825]"
+
+                mode_locked        "#[fg=#181825,bg=#f38ba8,bold] LOCKED #[fg=#f38ba8,bg=#181825]"
+                mode_resize        "#[fg=#181825,bg=#cba6f7,bold] RESIZE #[fg=#cba6f7,bg=#181825]"
+                mode_pane          "#[fg=#181825,bg=#a6e3a1,bold] PANE #[fg=#a6e3a1,bg=#181825]"
+
+                mode_scroll        "#[fg=#181825,bg=#f9e2af,bold] SCROLL #[fg=#f9e2af,bg=#181825]"
+                mode_enter_search  "#[fg=#181825,bg=#94e2d5,bold] SEARCH #[fg=#94e2d5,bg=#181825]"
+                mode_search        "#[fg=#181825,bg=#94e2d5,bold] SEARCH #[fg=#94e2d5,bg=#181825]"
+                mode_rename_tab    "#[fg=#181825,bg=#f5c2e7,bold] RENAME #[fg=#f5c2e7,bg=#181825]"
+                mode_rename_pane   "#[fg=#181825,bg=#f5c2e7,bold] RENAME #[fg=#f5c2e7,bg=#181825]"
+                mode_session       "#[fg=#181825,bg=#b4befe,bold] SESSION #[fg=#b4befe,bg=#181825]"
+                mode_move          "#[fg=#181825,bg=#fab387,bold] MOVE #[fg=#fab387,bg=#181825]"
+                mode_tmux          "#[fg=#181825,bg=#ffc387,bold] TMUX #[fg=#ffc387,bg=#181825]"
+
+                tab_normal              "#[fg=#181825,bg=#4C4C59] #[fg=#000000,bg=#4C4C59]{index}  {name} #[fg=#4C4C59,bg=#181825]"
+                tab_normal_fullscreen   "#[fg=#6C7086,bg=#181825] {index} {name} [] "
+                tab_normal_sync         "#[fg=#6C7086,bg=#181825] {index} {name} <> "
+                tab_active              "#[fg=#181825,bg=#ffffff,bold,italic] {index}  {name} #[fg=#ffffff,bg=#181825]"
+                tab_active_fullscreen   "#[fg=#9399B2,bg=#181825,bold,italic] {index} {name} [] "
+                tab_active_sync         "#[fg=#9399B2,bg=#181825,bold,italic] {index} {name} <> "
+
+                datetime          "#[fg=#6C7086,bg=#b1bbfa,bold] {format} "
+                datetime_format   "%d %b %Y %H:%M"
+                datetime_timezone "Europe/Paris"
+            }
+        }
+        children
+    }
+}
+
+// layout {
+//     default_tab_template {
+//         pane size=1 borderless=true {
+//             plugin location="file:~/.config/zellij/plugins/zjstatus.wasm" {
+
+//                 mode_normal  "#[bg=#89B4FA] "
+//                 mode_locked  "#[bg=#f38ba8] "
+//                 mode_resize  "#[bg=#cba6f7] "
+//                 mode_pane    "#[bg=#a6e3a1] "
+//                 mode_tab     "#[bg=#fab387] "
+//                 mode_scroll  "#[bg=#f9e2af] "
+//                 mode_session "#[bg=#b4befe] "
+//                 mode_move    "#[bg=#fab387] "
+//                 mode_tmux    "#[bg=#ffc387] "
+
+//                 tab_normal   "#[fg=#6C7086] {name} "
+//                 tab_active   "#[fg=#9399B2,bold,italic] {name} "
+
+//                 datetime        "#[fg=#6C7086,bold] {format} "
+//                 datetime_format "%a %d %b %H:%M"
+//                 datetime_timezone "Europe/Paris"
+//             }
+//         }
+//         children
+//     }
+// }
