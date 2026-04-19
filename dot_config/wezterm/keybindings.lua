@@ -305,6 +305,20 @@ function M.apply_to_config(config)
     },
   })
 
+  -- Toggle maximize window = CMD+SHIFT+M
+  table.insert(config.keys, {
+    key = 'm',
+    mods = 'SUPER|SHIFT',
+    action = wezterm.action_callback(function(window, _)
+      local dims = window:get_dimensions()
+      if dims.is_full_screen then
+        window:restore()
+      else
+        window:maximize()
+      end
+    end),
+  })
+
   -- Domain launcher = LEADER+D
   table.insert(config.keys, {
     key = 'D',

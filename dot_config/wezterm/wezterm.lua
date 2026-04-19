@@ -174,7 +174,7 @@ tabline.setup({
 
 tabline.apply_to_config(config)
 config.tab_max_width = 128
-config.window_decorations = "INTEGRATED_BUTTONS | RESIZE"
+config.window_decorations = "RESIZE"
 
 keybindings.apply_to_config(config)
 
