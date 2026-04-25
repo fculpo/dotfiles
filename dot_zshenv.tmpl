@@ -5,9 +5,6 @@ skip_global_compinit=1
 [ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
 
 {{ if eq .chezmoi.os "darwin" -}}
-# Disable focus reporting mode (prevents stray escape sequences after Claude Code exits)
-printf '\e[?1004l'
-
 # Ensure macOS SSH agent socket is available
 if [[ -z "$SSH_AUTH_SOCK" && "$OSTYPE" == darwin* ]]; then
     export SSH_AUTH_SOCK=$(launchctl getenv SSH_AUTH_SOCK)

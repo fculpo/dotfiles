@@ -2,6 +2,7 @@
 "npm:@bitwarden/cli" = "latest"
 "npm:@devcontainers/cli" = "latest"
 "npm:@google/gemini-cli" = "latest"
+"npm:@openai/codex" = "latest"
 bat = "latest"
 bun = "latest"
 delta = "latest"
