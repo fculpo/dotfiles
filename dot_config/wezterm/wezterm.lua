@@ -183,4 +183,7 @@ workspace_switcher.zoxide_path = "/opt/homebrew/bin/zoxide"
 
 resurrect.apply_to_config(config)
 
+-- Set last so plugins (tabline, workspace_switcher, resurrect) can't overwrite it
+config.window_padding = { left = 12, right = 12, top = 0, bottom = 0 }
+
 return config
