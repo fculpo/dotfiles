@@ -6,6 +6,7 @@
 bat = "latest"
 bun = "latest"
 delta = "latest"
+flux2 = "2.6.4"
 fzf = "latest"
 gh = "latest"
 git-lfs = "latest"
