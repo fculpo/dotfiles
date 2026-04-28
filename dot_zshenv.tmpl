@@ -10,3 +10,5 @@ if [[ -z "$SSH_AUTH_SOCK" && "$OSTYPE" == darwin* ]]; then
     export SSH_AUTH_SOCK=$(launchctl getenv SSH_AUTH_SOCK)
 fi
 {{ end }}
+
+alias assume=". assume"
