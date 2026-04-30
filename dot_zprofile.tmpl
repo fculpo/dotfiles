@@ -1,0 +1,12 @@
+{{ if eq .chezmoi.os "darwin" -}}
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+export CGO_CFLAGS="-I/opt/homebrew/opt/icu4c/include"
+export CGO_CXXFLAGS="-I/opt/homebrew/opt/icu4c/include"
+export CGO_LDFLAGS="-L/opt/homebrew/opt/icu4c/lib"
+export PKG_CONFIG_PATH="/opt/homebrew/opt/icu4c/lib/pkgconfig"
+{{ end -}}
+
+# Setting PATH for Python 3.11
+PATH="/Library/Frameworks/Python.framework/Versions/3.11/bin:${PATH}"
+export PATH
