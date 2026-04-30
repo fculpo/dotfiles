@@ -4,6 +4,22 @@ XDG_CONFIG_HOME="$HOME/.config"
 XDG_DATA_HOME="$HOME/.local/share"
 XDG_CACHE_HOME="$HOME/.cache"
 
+# Cache eval output to file, invalidate when binary changes.
+# Usage: _cached_eval <cache-name> <binary> [args...]
+_cached_eval() {
+  local name=$1 bin=$2; shift 2
+  local cache_dir="${XDG_CACHE_HOME}/zsh/eval-cache"
+  local cache_file="${cache_dir}/${name}.zsh"
+  local bin_path="${commands[$bin]}"
+  [[ -n "$bin_path" ]] || return
+  if [[ ! -f "$cache_file" || "$bin_path" -nt "$cache_file" ]]; then
+    mkdir -p "$cache_dir"
+    "$bin" "$@" > "$cache_file" 2>/dev/null
+    zcompile -UR "$cache_file"
+  fi
+  source "$cache_file"
+}
+
 # Silently apply direnv env before p10k instant prompt to avoid console output warnings.
 # The hook is installed later (after zim init) so future cd's still trigger direnv.
 (( ${+commands[direnv]} )) && emulate zsh -c "$(direnv export zsh)"
@@ -30,13 +46,14 @@ fi
 # Install missing modules and update ${ZIM_HOME}/init.zsh if missing or outdated.
 if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]]; then
   source ${ZIM_HOME}/zimfw.zsh init
+  source ${ZIM_HOME}/zimfw.zsh compile
 fi
 
 # Initialize modules.
 source ${ZIM_HOME}/init.zsh
 
 # Install direnv hook for directory-change triggers (env was pre-loaded above)
-(( ${+commands[direnv]} )) && eval "$(direnv hook zsh)"
+(( ${+commands[direnv]} )) && _cached_eval direnv-hook direnv hook zsh
 
 # Set editor default keymap to emacs (`-e`) or vi (`-v`)
 bindkey -e
@@ -211,16 +228,13 @@ if [[ -t 1 ]]; then
 fi
 
 [ -f "$HOME/.local/bin/env" ] && source "$HOME/.local/bin/env"
-[ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv zsh)"
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 [[ "$TERM_PROGRAM" == "WezTerm" ]] && [ -f "$HOME/.config/wezterm/shell-integration.sh" ] && source "$HOME/.config/wezterm/shell-integration.sh"
 
-
-command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
-command -v uv &>/dev/null && eval "$(uv generate-shell-completion zsh)"
-command -v uvx &>/dev/null && eval "$(uvx --generate-shell-completion zsh)"
+_cached_eval zoxide zoxide init zsh
+_cached_eval uv-completion uv generate-shell-completion zsh
+_cached_eval uvx-completion uvx --generate-shell-completion zsh
 command -v terragrunt &>/dev/null && export TG_PROVIDER_CACHE=1
-command -v flux >/dev/null && . <(flux completion zsh)
+_cached_eval flux-completion flux completion zsh
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
