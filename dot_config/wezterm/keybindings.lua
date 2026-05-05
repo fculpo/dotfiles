@@ -255,34 +255,34 @@ function M.apply_to_config(config)
     action = wezterm.action.TogglePaneZoomState,
   })
 
-  -- Zoom pane = ALT+f
+  -- Zoom pane = CTRL+SHIFT+f
   table.insert(config.keys, {
     key = 'f',
-    mods = 'ALT',
+    mods = 'CTRL|SHIFT',
     action = act.TogglePaneZoomState,
   })
 
-  -- Copy mode = ALT+e
+  -- Copy mode = CTRL+SHIFT+e
   table.insert(config.keys, {
     key = 'e',
-    mods = 'ALT',
+    mods = 'CTRL|SHIFT',
     action = wezterm.action.ActivateCopyMode,
   })
 
-  -- Split right = ALT+v
+  -- Split right = CTRL+SHIFT+v
   table.insert(config.keys, {
     key = 'v',
-    mods = 'ALT',
+    mods = 'CTRL|SHIFT',
     action = act.SplitPane {
       direction = 'Right',
       size = { Percent = 50 },
     },
   })
 
-  -- Split down = ALT+h
+  -- Split down = CTRL+SHIFT+h
   table.insert(config.keys, {
     key = 'h',
-    mods = 'ALT',
+    mods = 'CTRL|SHIFT',
     action = act.SplitPane {
       direction = 'Down',
       size = { Percent = 50 },

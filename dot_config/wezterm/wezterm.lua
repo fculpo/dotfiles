@@ -20,6 +20,7 @@ config.font_size                                  = 14
 config.front_end                                  = "WebGpu"
 config.leader                                     = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 }
 config.macos_window_background_blur               = 30
+config.send_composed_key_when_left_alt_is_pressed = true
 config.pane_focus_follows_mouse                   = true
 config.scrollback_lines                           = 10000
 config.set_environment_variables                  = { PATH = wezterm.home_dir .. '/.local/bin:/opt/homebrew/bin:' .. os.getenv('PATH') }
