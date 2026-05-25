@@ -14,11 +14,15 @@ _cached_eval() {
   [[ -n "$bin_path" ]] || return
   if [[ ! -f "$cache_file" || "$bin_path" -nt "$cache_file" ]]; then
     mkdir -p "$cache_dir"
-    "$bin" "$@" > "$cache_file" 2>/dev/null
+    "$bin" "$@" >| "$cache_file" 2>/dev/null
     zcompile -UR "$cache_file"
   fi
   source "$cache_file"
 }
+
+# Silently apply direnv env before p10k instant prompt to avoid console output warnings.
+# The hook is installed later (after zim init) so future cd's still trigger direnv.
+(( ${+commands[direnv]} )) && emulate zsh -c "$(direnv export zsh)"
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
@@ -47,6 +51,9 @@ fi
 
 # Initialize modules.
 source ${ZIM_HOME}/init.zsh
+
+# Install direnv hook for directory-change triggers (env was pre-loaded above)
+(( ${+commands[direnv]} )) && _cached_eval direnv-hook direnv hook zsh
 
 # Set editor default keymap to emacs (`-e`) or vi (`-v`)
 bindkey -e
@@ -206,10 +213,10 @@ if [ -d "$HOME/.zsh.d" ]; then
     done
 fi
 
-export PATH="$HOME/.local/bin:$HOME/go/bin:/opt/homebrew/opt/openjdk/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/go/bin:$PATH"
 # Prevent duplicate PATH entries (zsh feature)
 typeset -U path
-path=("$HOME/.local/bin" "/opt/homebrew/bin" "$HOME/go/bin" "/opt/homebrew/opt/openjdk/bin" $path)
+path=("/opt/homebrew/bin" "$HOME/.local/bin" "$HOME/go/bin" $path)
 
 # export NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem
 
@@ -232,7 +239,7 @@ _cached_eval flux-completion flux completion zsh
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# Install direnv hook after Powerlevel10k initialization so direnv load/unload
-# messages stay visible without tripping instant-prompt startup warnings.
-(( ${+commands[direnv]} )) && _cached_eval direnv-hook direnv hook zsh
-export COPYFILE_DISABLE=1
+# dxs-airgap shell completion
+eval "$(_DXS_AIRGAP_COMPLETE=zsh_source dxs-airgap)"
+
+complete -o nospace -C /Users/fculpo/.local/share/mise/installs/tanka/0.37.0/tk tk
