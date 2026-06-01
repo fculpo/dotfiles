@@ -33,3 +33,18 @@ keybind = super+v=paste_from_clipboard
 keybind = super+shift+comma=reload_config
 keybind = super+q=quit
 keybind = super+n=unbind
+
+# Clicking links inside Zellij
+# -----------------------------
+# Zellij runs with `mouse_mode true`, so it captures the mouse and Ghostty's
+# native super+click-to-open-link never fires. Two ways to reach a link:
+#
+#   1. Hold Shift and click the link (super+shift+click to open it). Shift
+#      bypasses Zellij's mouse capture so Ghostty handles the click — links
+#      open, drag selects. `never` (vs the default `false`) stops Zellij from
+#      reclaiming Shift via XTSHIFTESCAPE, so this always works.
+#   2. super+shift+m toggles mouse reporting OFF entirely: every link becomes a
+#      plain Ghostty click again. Toggle back on to restore Zellij's
+#      focus-follows-mouse / copy-on-select / pane clicks.
+mouse-shift-capture = never
+keybind = super+shift+m=toggle_mouse_reporting
