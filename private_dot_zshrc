@@ -109,6 +109,12 @@ for key in 'j'; do
 done
 unset key
 
+# Bind Alt+←/→ to word motion. Option+arrow reaches zsh as ^[[1;3D / ^[[1;3C
+# (ghostty emits the Alt modifier for arrows even with macos-option-as-alt
+# unset), but zsh leaves those undefined-key by default. Alt+h/l left alone.
+bindkey '^[[1;3D' backward-word   # Alt+Left  → previous word
+bindkey '^[[1;3C' forward-word    # Alt+Right → next word
+
 # Enable bash completion compatibility.
 # After this, you can use complete -F and other bash completion commands in zsh,
 # which is useful for tools that only provide bash completion scripts (like terraform, kubectl, etc).
