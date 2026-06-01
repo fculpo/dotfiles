@@ -242,4 +242,4 @@ _cached_eval flux-completion flux completion zsh
 # dxs-airgap shell completion
 eval "$(_DXS_AIRGAP_COMPLETE=zsh_source dxs-airgap)"
 
-complete -o nospace -C /Users/fculpo/.local/share/mise/installs/tanka/0.37.0/tk tk
+complete -o nospace -C /Users/fculpo/.local/share/mise/installs/tanka/latest/tk tk

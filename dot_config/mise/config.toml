@@ -18,6 +18,8 @@ ripgrep = "latest"
 usage = "latest"
 uv = "latest"
 zoxide = "latest"
+yazi = "latest"
+tanka = "latest"
 
 [settings]
 
