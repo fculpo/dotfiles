@@ -8,8 +8,6 @@ layout {
                 format_right "#[fg=#181825,bg=#b1bbfa]{datetime}"
                 format_space "#[bg=#181825]"
 
-                hide_frame_for_single_pane "true"
-
                 mode_normal        "#[fg=#181825,bg=#89b4fa,bold] NORMAL #[fg=#89b4fa,bg=#181825]"
                 mode_tab           "#[fg=#181825,bg=#fab387,bold] TAB #[fg=#fab387,bg=#181825]"
 
@@ -39,35 +37,5 @@ layout {
             }
         }
         children
-        pane size=2 borderless=true {
-            plugin location="zellij:status-bar"
-        }
     }
 }
-
-// layout {
-//     default_tab_template {
-//         pane size=1 borderless=true {
-//             plugin location="file:~/.config/zellij/plugins/zjstatus.wasm" {
-
-//                 mode_normal  "#[bg=#89B4FA] "
-//                 mode_locked  "#[bg=#f38ba8] "
-//                 mode_resize  "#[bg=#cba6f7] "
-//                 mode_pane    "#[bg=#a6e3a1] "
-//                 mode_tab     "#[bg=#fab387] "
-//                 mode_scroll  "#[bg=#f9e2af] "
-//                 mode_session "#[bg=#b4befe] "
-//                 mode_move    "#[bg=#fab387] "
-//                 mode_tmux    "#[bg=#ffc387] "
-
-//                 tab_normal   "#[fg=#6C7086] {name} "
-//                 tab_active   "#[fg=#9399B2,bold,italic] {name} "
-
-//                 datetime        "#[fg=#6C7086,bold] {format} "
-//                 datetime_format "%a %d %b %H:%M"
-//                 datetime_timezone "Europe/Paris"
-//             }
-//         }
-//         children
-//     }
-// }
