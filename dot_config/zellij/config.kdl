@@ -156,8 +156,8 @@ keybinds clear-defaults=true {
         bind "Super i" { MoveTab "Left"; }
         bind "Super o" { MoveTab "Right"; }
 
-        bind "Alt h" "Alt left" { MoveFocusOrTab "left"; }
-        bind "Alt l" "Alt right" { MoveFocusOrTab "right"; }
+        bind "Alt h" { MoveFocusOrTab "left"; }
+        bind "Alt l" { MoveFocusOrTab "right"; }
 
         bind "Super Up" "Alt up" "Super k" { MoveFocus "Up"; }
         bind "Super Down" "Alt down" "Super j" { MoveFocus "down"; }
@@ -239,7 +239,7 @@ keybinds clear-defaults=true {
         bind "d" { Detach; }
     }
     tmux {
-        bind "Ctrl a" { Write 2; SwitchToMode "normal"; }
+        bind "Ctrl a" { Write 1; SwitchToMode "normal"; }
 
         bind "-" { NewPane "Down"; SwitchToMode "normal"; }
         bind "|" { NewPane "Right"; SwitchToMode "normal"; }
