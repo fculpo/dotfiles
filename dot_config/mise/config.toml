@@ -13,13 +13,15 @@ git-lfs = "latest"
 github-cli = "latest"
 glab = "latest"
 lsd = "latest"
-node = "lts/jod"
+node = "lts/krypton"
 ripgrep = "latest"
 usage = "latest"
 uv = "latest"
 zoxide = "latest"
+direnv = "latest"
 yazi = "latest"
 tanka = "latest"
+yq = "latest"
 
 [settings]
 
