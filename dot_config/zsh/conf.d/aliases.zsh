@@ -1,7 +1,5 @@
 alias crypto='curl rate.sx' # Get crypto prices
 
-alias h='history'
-alias j='jobs -l'
 alias path='echo -e ${PATH//:/\\n}'
 alias now='date +"%T"'
 alias nowtime=now
@@ -30,11 +28,6 @@ alias kn="kubens"
 alias r="exec zsh"
 
 alias myip='curl https://ipv4.icanhazip.com; echo'
-
-# Alias Screensaver on macOS High Sierra as afk. My Mac locks when it starts.
-if [[ -f "/System/Library/CoreServices/ScreenSaverEngine.app/Contents/MacOS/ScreenSaverEngine" ]]; then
-    alias afk="open -a ScreenSaverEngine"
-fi
 
 [[ "$(command -v prettyping)" ]] && alias ping="prettyping --nolegend"
 [[ "$(command -v prettyping)" ]] && alias ping6="prettyping --nolegend --ipv6"
@@ -66,6 +59,7 @@ y2j() {
 if [[ ${OSTYPE} == "darwin"* ]]; then # Only load these on a MacOS computer
 
     ## ALIASES ##
+    alias afk="open -a ScreenSaverEngine"
     alias cpwd='pwd | tr -d "\n" | pbcopy'                        # Copy the working path to clipboard
     alias cl="fc -e -|pbcopy"                                     # Copy output of last command to clipboard
     alias caff="caffeinate -ism"                                  # Run command without letting mac sleep
@@ -76,22 +70,22 @@ if [[ ${OSTYPE} == "darwin"* ]]; then # Only load these on a MacOS computer
     alias capic="screencapture -i -c"
     alias capiwc="screencapture -i -w -c"
 
-    CAPTURE_FOLDER="${HOME}/Desktop"
+    CAPTURE_FOLDER="${HOME}/Documents"
 
     function cap() {
         # DESC: Capture the screen to the desktop
         screencapture "${CAPTURE_FOLDER}/capture-$(date +%Y%m%d_%H%M%S).png"
     }
 
-function capi() {
-    # DESC: Capture the selected screen area to the desktop
-    screencapture -i "${CAPTURE_FOLDER}/capture-$(date +%Y%m%d_%H%M%S).png"
-}
+    function capi() {
+        # DESC: Capture the selected screen area to the desktop
+        screencapture -i "${CAPTURE_FOLDER}/capture-$(date +%Y%m%d_%H%M%S).png"
+    }
 
-function capiw() {
-    # DESC: Capture the selected window to the desktop
-    screencapture -i -w "${CAPTURE_FOLDER}/capture-$(date +%Y%m%d_%H%M%S).png"
-}
+    function capiw() {
+        # DESC: Capture the selected window to the desktop
+        screencapture -i -w "${CAPTURE_FOLDER}/capture-$(date +%Y%m%d_%H%M%S).png"
+    }
 
     # Open the finder to a specified path or to current directory.
     f() {
@@ -102,15 +96,15 @@ function capiw() {
         open -a "Finder" "${1:-.}"
     }
 
-ql() {
-    # DESC:  Opens files in MacOS Quicklook
-    # ARGS:  $1 (optional): File to open in Quicklook
-    # USAGE: ql [file1] [file2]
-    qlmanage -p "${*}" &>/dev/null
-}
+    ql() {
+        # DESC:  Opens files in MacOS Quicklook
+        # ARGS:  $1 (optional): File to open in Quicklook
+        # USAGE: ql [file1] [file2]
+        qlmanage -p "${*}" &>/dev/null
+    }
 
     # Clean up LaunchServices to remove duplicates in the "Open With" menu
-    alias cleanupLS="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder" 
+    alias cleanupLS="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder"
 
     unquarantine() {
         # DESC:  Manually remove a downloaded app or file from the MacOS quarantine
@@ -123,33 +117,33 @@ ql() {
         done
     }
 
-browser() {
-    # DESC:  Pipe HTML to a Safari browser window
-    # USAGE: echo "<h1>hi mom!</h1>" | browser'
+    browser() {
+        # DESC:  Pipe HTML to a Safari browser window
+        # USAGE: echo "<h1>hi mom!</h1>" | browser'
 
-    local FILE
-    FILE=$(mktemp -t browser.XXXXXX.html)
-    cat /dev/stdin >|"${FILE}"
-    open -a Safari "${FILE}"
-}
+        local FILE
+        FILE=$(mktemp -t browser.XXXXXX.html)
+        cat /dev/stdin >|"${FILE}"
+        open -a Safari "${FILE}"
+    }
 
-finderpath() {
-    # DESC:  Echoes the path of the frontmost window in the finder
-    # ARGS:  None
-    # OUTS:  None
-    # USAGE: cd $(finderpath)
-    # credit: https://github.com/herrbischoff/awesome-osx-command-line/blob/master/functions.md
+    finderpath() {
+        # DESC:  Echoes the path of the frontmost window in the finder
+        # ARGS:  None
+        # OUTS:  None
+        # USAGE: cd $(finderpath)
+        # credit: https://github.com/herrbischoff/awesome-osx-command-line/blob/master/functions.md
 
-    local FINDER_PATH
+        local FINDER_PATH
 
-    FINDER_PATH=$(
-        osascript -e 'tell application "Finder"' \
-            -e "if (${1-1} <= (count Finder windows)) then" \
-            -e "get POSIX path of (target of window ${1-1} as alias)" \
-            -e 'else' \
-            -e 'get POSIX path of (desktop as alias)' \
-            -e 'end if' \
-            -e 'end tell' 2>/dev/null
+        FINDER_PATH=$(
+            osascript -e 'tell application "Finder"' \
+                -e "if (${1-1} <= (count Finder windows)) then" \
+                -e "get POSIX path of (target of window ${1-1} as alias)" \
+                -e 'else' \
+                -e 'get POSIX path of (desktop as alias)' \
+                -e 'end if' \
+                -e 'end tell' 2>/dev/null
         )
 
         echo "${FINDER_PATH}"
