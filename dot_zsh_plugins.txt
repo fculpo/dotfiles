@@ -1,0 +1,56 @@
+using:mattmc3/zephyr path:plugins
+color
+completion
+confd
+#directory
+#editor
+environment
+history
+homebrew
+macos
+prompt
+utility
+zfunctions
+
+getantidote/use-omz
+ohmyzsh/ohmyzsh path:lib
+
+using:ohmyzsh/ohmyzsh path:plugins
+# mise first: it activates synchronously and adds mise-managed tools (eza, etc.)
+# to $PATH, so later tool plugins' "command not found" guards pass.
+mise
+chezmoi
+common-aliases
+direnv
+extract
+eza
+fluxcd
+fzf
+gcloud
+gh
+gnu-utils
+gpg-agent
+helm
+kubectl
+magic-enter
+mise
+ssh-agent
+sudo
+uv
+zoxide
+
+ohmyzsh/ohmyzsh path:plugins/pass kind:fpath
+
+# romkatv/zsh-bench kind:path
+
+joke/zim-yq
+MichaelAquilina/zsh-you-should-use
+reegnz/jq-zsh-plugin
+wfxr/forgit
+
+romkatv/powerlevel10k kind:fpath
+
+zsh-users/zsh-completions path:src kind:fpath
+zdharma-continuum/fast-syntax-highlighting kind:defer
+zsh-users/zsh-autosuggestions kind:defer
+zsh-users/zsh-history-substring-search kind:defer

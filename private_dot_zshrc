@@ -1,59 +1,30 @@
 # shellcheck disable=all
 
+# zmodload zsh/zprof
+
 XDG_CONFIG_HOME="$HOME/.config"
 XDG_DATA_HOME="$HOME/.local/share"
 XDG_CACHE_HOME="$HOME/.cache"
 
-# Cache eval output to file, invalidate when binary changes.
-# Usage: _cached_eval <cache-name> <binary> [args...]
-_cached_eval() {
-  local name=$1 bin=$2; shift 2
-  local cache_dir="${XDG_CACHE_HOME}/zsh/eval-cache"
-  local cache_file="${cache_dir}/${name}.zsh"
-  local bin_path="${commands[$bin]}"
-  [[ -n "$bin_path" ]] || return
-  if [[ ! -f "$cache_file" || "$bin_path" -nt "$cache_file" ]]; then
-    mkdir -p "$cache_dir"
-    "$bin" "$@" >| "$cache_file" 2>/dev/null
-    zcompile -UR "$cache_file"
-  fi
-  source "$cache_file"
-}
-
-# Silently apply direnv env before p10k instant prompt to avoid console output warnings.
-# The hook is installed later (after zim init) so future cd's still trigger direnv.
-(( ${+commands[direnv]} )) && emulate zsh -c "$(direnv export zsh)"
+# Base PATH: personal bin dirs + dedupe. Set early so the homebrew plugin and mise
+# (loaded later) prepend themselves in front — stable order, no bottom-of-file race.
+# typeset -U keeps the first occurrence of each entry (no duplicates).
+typeset -U path PATH
+path=("$HOME/.local/bin" "$HOME/go/bin" $path)
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+    source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
+
+function is-macos() {
+    [[ $OSTYPE == darwin* ]]
+}
 
 EDITOR="vim"
 VISUAL="vim"
-
-zstyle ':zim:zmodule' use 'degit'
-ZIM_HOME=${XDG_CACHE_HOME}/zim
-
-# Download zimfw plugin manager if missing.
-if [[ ! -e ${ZIM_HOME}/zimfw.zsh ]]; then
-  curl -fsSL --create-dirs -o ${ZIM_HOME}/zimfw.zsh \
-    https://github.com/zimfw/zimfw/releases/latest/download/zimfw.zsh
-fi
-
-# Install missing modules and update ${ZIM_HOME}/init.zsh if missing or outdated.
-if [[ ! ${ZIM_HOME}/init.zsh -nt ${ZIM_CONFIG_FILE:-${ZDOTDIR:-${HOME}}/.zimrc} ]]; then
-  source ${ZIM_HOME}/zimfw.zsh init
-  source ${ZIM_HOME}/zimfw.zsh compile
-fi
-
-# Initialize modules.
-source ${ZIM_HOME}/init.zsh
-
-# Install direnv hook for directory-change triggers (env was pre-loaded above)
-(( ${+commands[direnv]} )) && _cached_eval direnv-hook direnv hook zsh
 
 # Set editor default keymap to emacs (`-e`) or vi (`-v`)
 bindkey -e
@@ -64,19 +35,10 @@ setopt CORRECT
 # Customize spelling correction prompt.
 SPROMPT='zsh: correct %F{red}%R%f to %F{green}%r%f [nyae]? '
 
-# Remove path separator from WORDCHARS.
-WORDCHARS=${WORDCHARS//[\/]}
+# Remove / and - from WORDCHARS.
+WORDCHARS=${WORDCHARS//[\/-]/}
 
-# Append `../` to your input for each `.` you type after an initial `..`
-zstyle ':zim:input' double-dot-expand yes
-
-# Set a custom terminal title format using prompt expansion escape sequences.
-# See http://zsh.sourceforge.net/Doc/Release/Prompt-Expansion.html#Simple-Prompt-Escapes
-# If none is provided, the default '%n@%m: %~' is used.
-zstyle ':zim:termtitle' format '%1~'
-
-# Disable automatic widget re-binding on each precmd. This can be set when
-# zsh-users/zsh-autosuggestions is the last module in your ~/.zimrc.
+# Disable automatic widget re-binding on each precmd.
 ZSH_AUTOSUGGEST_MANUAL_REBIND=1
 
 # Customize the style that the suggestions are shown with.
@@ -92,84 +54,60 @@ ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
 typeset -A ZSH_HIGHLIGHT_STYLES
 ZSH_HIGHLIGHT_STYLES[comment]='fg=242'
 
+# Load $terminfo so the binds below can reference ${terminfo[kcuu1/kcud1]} (ghostty's
+# app-mode ^[OA/^[OB up/down codes). p10k's instant prompt usually loads it first; this
+# makes the bindings self-sufficient if that cache is ever missing. -F +p:terminfo
+# loads only the $terminfo parameter feature.
 zmodload -F zsh/terminfo +p:terminfo
 
 # Bind ^[[A/^[[B manually so up/down works both before and after zle-line-init
 for key in '^[[A' '^P' ${terminfo[kcuu1]}; do
-  bindkey "$key" history-substring-search-up
+    bindkey "$key" history-substring-search-up
 done
 for key in '^[[B' '^N' ${terminfo[kcud1]}; do
-  bindkey "$key" history-substring-search-down
+    bindkey "$key" history-substring-search-down
 done
-for key in 'k'; do
-  bindkey -M vicmd "$key" history-substring-search-up
-done
-for key in 'j'; do
-  bindkey -M vicmd "$key" history-substring-search-down
-done
+bindkey -M vicmd 'k' history-substring-search-up
+bindkey -M vicmd 'j' history-substring-search-down
 unset key
 
 # Bind Alt+←/→ to word motion. Option+arrow reaches zsh as ^[[1;3D / ^[[1;3C
 # (ghostty emits the Alt modifier for arrows even with macos-option-as-alt
 # unset), but zsh leaves those undefined-key by default. Alt+h/l left alone.
-bindkey '^[[1;3D' backward-word   # Alt+Left  → previous word
-bindkey '^[[1;3C' forward-word    # Alt+Right → next word
+bindkey '^[[1;3D' backward-word # Alt+Left  → previous word
+bindkey '^[[1;3C' forward-word  # Alt+Right → next word
 
 # Enable bash completion compatibility.
 # After this, you can use complete -F and other bash completion commands in zsh,
 # which is useful for tools that only provide bash completion scripts (like terraform, kubectl, etc).
 autoload -U +X bashcompinit && bashcompinit
 
-HISTFILE="$HOME/.zsh_history"
-HISTSIZE=50000
-SAVEHIST=50000
-
-unsetopt SHARE_HISTORY
-setopt INC_APPEND_HISTORY
-setopt EXTENDED_HISTORY
-setopt HIST_FIND_NO_DUPS      # Skip duplicates when searching (Ctrl+R)
-setopt HIST_VERIFY            # Show command before executing from history
-setopt HIST_REDUCE_BLANKS     # Remove extra blanks from commands
-
-# Completion behavior
-unsetopt MENU_COMPLETE        # Don't cycle through completions with TAB
-setopt AUTO_LIST              # List choices on ambiguous completion
-setopt COMPLETE_IN_WORD       # Complete from cursor position
-setopt AUTO_PARAM_SLASH       # Add trailing slash for directories
-
-# Directory navigation
-setopt AUTO_CD                # Type directory name to cd into it
-setopt PUSHD_IGNORE_DUPS      # No duplicate entries in directory stack
+zstyle ':zephyr:plugin:history' 'histfile' "$HOME/.zsh_history"
+zstyle ':zephyr:plugin:history:aux:sqlite' enable yes
+zstyle ':zephyr:plugin:history:aux:json' enable yes
 
 # Globbing
-unsetopt CASE_GLOB            # Case-insensitive globbing
-setopt EXTENDED_GLOB          # Advanced globbing (**, ^, ~, etc.)
-unsetopt GLOB_DOTS            # If enabled, globs match dotfiles - be careful with rm *
-setopt NO_NOMATCH             # Pass through unmatched globs instead of error
+unsetopt CASE_GLOB   # Case-insensitive globbing
+setopt EXTENDED_GLOB # Advanced globbing (**, ^, ~, etc.)
+unsetopt GLOB_DOTS   # If enabled, globs match dotfiles - be careful with rm *
+setopt NO_NOMATCH    # Pass through unmatched globs instead of error
 
-# Misc
-unsetopt PATH_DIRS            # Don't search PATH for slashed commands (security)
-setopt NOTIFY                 # Immediate job notifications
-setopt NO_FLOW_CONTROL        # Disable Ctrl+S/Ctrl+Q
-setopt NO_LIST_BEEP           # No beep on completion list
+setopt NO_LIST_BEEP # No beep on completion list
 
-zstyle ':completion:*' verbose true
-zstyle ':completion:*' menu select
-zstyle ':completion:::::' completer _extensions _complete _approximate
+# Completion is owned by zephyr's `completion` plugin.
+zstyle ':zephyr:plugin:completion' 'compstyle' 'zephyr'
+zstyle ':zephyr:plugin:completion' 'use-cache' 'yes'
+
+# zstyle ':completion:::::' completer _extensions _complete _approximate
 
 # Complete the alias when _expand_alias is used as a function
-zstyle ':completion:*' complete true
-zle -C alias-expension complete-word _generic
-bindkey '^xa' alias-expension
-zstyle ':completion:alias-expension:*' completer _expand_alias
+zle -C alias-expansion complete-word _generic
+bindkey '^xa' alias-expansion
+zstyle ':completion:alias-expansion:*' completer _expand_alias
 
 # Autocomplete options for cd instead of directory stack
 zstyle ':completion:*' complete-options true
 zstyle ':completion:*' file-sort modification
-
-# Use cache for commands using cache
-zstyle ':completion:*' use-cache on
-zstyle ':completion:*' cache-path "$XDG_CACHE_HOME/zsh/.zcompcache"
 
 zstyle ':completion:*:*:*:*:corrections' format '%F{yellow}!- %d (errors: %e) -!%f'
 zstyle ':completion:*:*:*:*:descriptions' format '%F{blue}-- %D %d --%f'
@@ -177,40 +115,41 @@ zstyle ':completion:*:*:*:*:messages' format ' %F{purple} -- %d --%f'
 zstyle ':completion:*:*:*:*:warnings' format ' %F{red}-- no matches found --%f'
 #zstyle ':completion:*:default' list-prompt '%S%M matches%s'
 
-# Group matches and describe.
-zstyle ':completion:*:matches' group 'yes'
-zstyle ':completion:*:options' description 'yes'
-zstyle ':completion:*:options' auto-description '%d'
-#zstyle ':completion:*' format ' %F{yellow}-- %d --%f'
-
-zstyle ':completion:*:*:-command-:*:*' group-order aliases builtins functions commands
-
-# See ZSHCOMPWID "completion matching control"
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
-
 zstyle ':completion:*' keep-prefix true
-
 zstyle -e ':completion:*:(ssh|scp|sftp|rsh|rsync):hosts' hosts 'reply=(${=${${(f)"$(cat {/etc/ssh_,~/.ssh/known_}hosts(|2)(N) /dev/null)"}%%[# ]*}//,/ })'
-
-zstyle ':completion:*:default' list-colors ${(s.:.)LS_COLORS}
-zstyle ':completion:*:*:cd:*:directory-stack' menu yes select
-zstyle ':completion:*:-tilde-:*' group-order 'named-directories' 'path-directories' 'users' 'expand'
-zstyle ':completion:*' squeeze-slashes true
-
-# Don't complete uninteresting users...
-zstyle ':completion:*:*:*:users' ignored-patterns \
-  adm amanda apache avahi beaglidx bin cacti canna clamav daemon \
-  dbus distcache docker dovecot fax ftp games gdm gkrellmd gopher \
-  hacluster haldaemon halt hsqldb ident junkbust ldap lp mail \
-  mailman mailnull mldonkey mysql nagios \
-  named netdump news nfsnobody nobody nscd ntp nut nx openvpn \
-  operator pcap postfix postgres privoxy pulse pvm quagga radvd \
-  rpc rpcuser rpm shutdown squid sshd sync uucp vcsa xfs '_*'
+zstyle ':completion:*:*:-command-:*:*' group-order aliases builtins functions commands
 
 # Bind edit-command-line to Ctrl+X, then Ctrl+E (standard for editing the command line in $EDITOR)
 autoload -U edit-command-line
 zle -N edit-command-line
 bindkey '^X^E' edit-command-line
+
+# BEGIN Antidote setup
+
+# Set the root name of the plugins files (.txt and .zsh) antidote will use.
+zsh_plugins=${ZDOTDIR:-$HOME}/.zsh_plugins
+
+# Ensure the .zsh_plugins.txt file exists so you can add plugins.
+[[ -f ${zsh_plugins}.txt ]] || touch ${zsh_plugins}.txt
+
+# Lazy-load antidote from its functions directory.
+fpath=(~/.antidote/functions $fpath)
+autoload -Uz antidote
+
+# Generate a new static file whenever .zsh_plugins.txt is updated.
+if [[ ! ${zsh_plugins}.zsh -nt ${zsh_plugins}.txt ]]; then
+    antidote bundle <${zsh_plugins}.txt >|${zsh_plugins}.zsh
+fi
+
+# Source your static plugins file.
+source ${zsh_plugins}.zsh
+
+# END Antidote setup
+
+# Re-apply PATH_DIRS=off as zephyr's completion plugin sets `path_dirs`.
+# security behavior of not searching $PATH for slashed command names.
+unsetopt PATH_DIRS
 
 # Load all files from zshrc.d directory
 if [ -d "$HOME/.zsh.d" ]; then
@@ -219,33 +158,29 @@ if [ -d "$HOME/.zsh.d" ]; then
     done
 fi
 
-export PATH="$HOME/.local/bin:$HOME/go/bin:$PATH"
-# Prevent duplicate PATH entries (zsh feature)
-typeset -U path
-path=("/opt/homebrew/bin" "$HOME/.local/bin" "$HOME/go/bin" $path)
+# Prime direnv for the starting directory silently (stderr suppressed) so its
+# precmd hook has nothing left to log on the first prompt. This avoids p10k's
+# "console output during zsh initialization" warning. Interactive `cd` into
+# other directories still shows direnv's normal loading messages.
+(($+commands[direnv])) && eval "$(direnv export zsh 2>/dev/null)"
 
-# export NODE_EXTRA_CA_CERTS=/etc/ssl/cert.pem
+# compinit is deferred to the first precmd, so register bash-style `complete -C`
+# completions from a one-shot precmd hook (runs after compinit). Inline here they
+# would run before compinit and be silently dropped. Each tool is guarded
+# independently so one missing binary doesn't disable the others.
+autoload -Uz add-zsh-hook
+_register_bashcompl() {
+    (($+commands[tk])) && complete -o nospace -C "$(command -v tk)" tk
+    (($+commands[terraform])) && complete -o nospace -C "$(command -v terraform)" terraform
+    add-zsh-hook -d precmd _register_bashcompl
+}
+add-zsh-hook precmd _register_bashcompl
 
-# Set GPG_TTY to the current terminal only if running in an interactive terminal (tty).
-# This ensures GPG works correctly for pinentry and other interactive operations.
-if [[ -t 1 ]]; then
-  GPG_TTY=$(tty)
-  export GPG_TTY
-fi
+autoload -Uz promptinit && promptinit && prompt powerlevel10k
 
-[ -f "$HOME/.local/bin/env" ] && source "$HOME/.local/bin/env"
-[[ "$TERM_PROGRAM" == "WezTerm" ]] && [ -f "$HOME/.config/wezterm/shell-integration.sh" ] && source "$HOME/.config/wezterm/shell-integration.sh"
-
-_cached_eval zoxide zoxide init zsh
-_cached_eval uv-completion uv generate-shell-completion zsh
-_cached_eval uvx-completion uvx --generate-shell-completion zsh
-command -v terragrunt &>/dev/null && export TG_PROVIDER_CACHE=1
-_cached_eval flux-completion flux completion zsh
+export TG_PROVIDER_CACHE=1
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# dxs-airgap shell completion
-eval "$(_DXS_AIRGAP_COMPLETE=zsh_source dxs-airgap)"
-
-complete -o nospace -C /Users/fculpo/.local/share/mise/installs/tanka/latest/tk tk
+# zprof
