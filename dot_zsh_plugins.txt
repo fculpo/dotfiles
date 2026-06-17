@@ -8,7 +8,6 @@ environment
 history
 homebrew
 macos
-prompt
 utility
 zfunctions
 
@@ -33,8 +32,6 @@ gpg-agent
 helm
 kubectl
 magic-enter
-mise
-ssh-agent
 sudo
 uv
 zoxide

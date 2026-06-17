@@ -142,6 +142,9 @@ if [[ ! ${zsh_plugins}.zsh -nt ${zsh_plugins}.txt ]]; then
     antidote bundle <${zsh_plugins}.txt >|${zsh_plugins}.zsh
 fi
 
+# Skip oh-my-zsh's auto-update check on startup (must be set before omz lib loads).
+zstyle ':omz:update' mode disabled
+
 # Source your static plugins file.
 source ${zsh_plugins}.zsh
 
@@ -179,6 +182,9 @@ add-zsh-hook precmd _register_bashcompl
 autoload -Uz promptinit && promptinit && prompt powerlevel10k
 
 export TG_PROVIDER_CACHE=1
+
+# Added by codebase-memory-mcp install
+export PATH="/Users/fculpo/.local/bin:$PATH"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
