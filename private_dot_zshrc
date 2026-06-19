@@ -60,17 +60,6 @@ ZSH_HIGHLIGHT_STYLES[comment]='fg=242'
 # loads only the $terminfo parameter feature.
 zmodload -F zsh/terminfo +p:terminfo
 
-# Bind ^[[A/^[[B manually so up/down works both before and after zle-line-init
-for key in '^[[A' '^P' ${terminfo[kcuu1]}; do
-    bindkey "$key" history-substring-search-up
-done
-for key in '^[[B' '^N' ${terminfo[kcud1]}; do
-    bindkey "$key" history-substring-search-down
-done
-bindkey -M vicmd 'k' history-substring-search-up
-bindkey -M vicmd 'j' history-substring-search-down
-unset key
-
 # Bind Alt+←/→ to word motion. Option+arrow reaches zsh as ^[[1;3D / ^[[1;3C
 # (ghostty emits the Alt modifier for arrows even with macos-option-as-alt
 # unset), but zsh leaves those undefined-key by default. Alt+h/l left alone.
@@ -149,6 +138,17 @@ zstyle ':omz:update' mode disabled
 source ${zsh_plugins}.zsh
 
 # END Antidote setup
+
+# Bind ^[[A/^[[B manually so up/down works both before and after zle-line-init
+for key in '^[[A' '^P' ${terminfo[kcuu1]}; do
+    bindkey "$key" history-substring-search-up
+done
+for key in '^[[B' '^N' ${terminfo[kcud1]}; do
+    bindkey "$key" history-substring-search-down
+done
+bindkey -M vicmd 'k' history-substring-search-up
+bindkey -M vicmd 'j' history-substring-search-down
+unset key
 
 # Re-apply PATH_DIRS=off as zephyr's completion plugin sets `path_dirs`.
 # security behavior of not searching $PATH for slashed command names.
