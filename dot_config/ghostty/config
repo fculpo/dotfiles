@@ -15,8 +15,11 @@ background-blur = 20
 window-theme = dark
 macos-titlebar-style = hidden
 
-# Auto-launch Zellij — attach to existing session or create new one
-command = /opt/homebrew/bin/zellij attach --create
+# Auto-launch Zellij — always reconnect to the same named session.
+# `attach --create main` attaches if "main" is running, resurrects it (restoring
+# tabs/panes/layout) if it EXITED, or creates it if it doesn't exist yet. Using a
+# fixed name avoids the random-named session pile-up that bare `--create` caused.
+command = /opt/homebrew/bin/zellij attach --create main
 
 # Shell integration (works inside Zellij-spawned shells)
 shell-integration = zsh
