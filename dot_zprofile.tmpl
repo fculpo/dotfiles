@@ -1,12 +1,12 @@
 {{ if eq .chezmoi.os "darwin" -}}
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
-export CGO_CFLAGS="-I/opt/homebrew/opt/icu4c/include"
-export CGO_CXXFLAGS="-I/opt/homebrew/opt/icu4c/include"
-export CGO_LDFLAGS="-L/opt/homebrew/opt/icu4c/lib"
-export PKG_CONFIG_PATH="/opt/homebrew/opt/icu4c/lib/pkgconfig"
-{{ end -}}
+# Added by OrbStack: command-line tools and integration
+# This won't be added again if you remove it.
+source ~/.orbstack/shell/init.zsh 2>/dev/null || :
 
-# Setting PATH for Python 3.11
-PATH="/Library/Frameworks/Python.framework/Versions/3.11/bin:${PATH}"
-export PATH
+# Android SDK (Homebrew android-commandlinetools)
+export ANDROID_HOME="$HOMEBREW_PREFIX/share/android-commandlinetools"
+export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+
+{{ end -}}
