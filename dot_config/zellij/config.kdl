@@ -165,7 +165,7 @@ keybinds clear-defaults=true {
         bind "Super [" { GoToPreviousTab; }
         bind "Super ]" { GoToNextTab; }
 
-        bind "Ctrl q" { Quit; }
+        // bind "Ctrl q" { Quit; }
 
         bind "Super =" "Super +" { Resize "Increase"; }
         bind "Super -" { Resize "Decrease"; }
@@ -292,6 +292,7 @@ plugins {
 load_plugins {
     zellij:link
     "file:~/.config/zellij/plugins/zjstatus.wasm"
+    "file:~/.config/zellij/plugins/zellij-attention.wasm"
     // Do NOT add `hide_frame_for_single_pane "true"` (or other frame-toggling
     // opts) here: zjframes then toggles pane frames in a render loop and the UI
     // flashes permanently / becomes unusable (worst with the zjstatus "main"
