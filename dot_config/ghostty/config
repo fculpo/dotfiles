@@ -2,7 +2,7 @@
 # Reload with Cmd+Shift+,
 
 # Theme
-theme = TokyoNight
+theme = ayu-dark
 
 # Font
 font-family = IosevkaTerm Nerd Font
