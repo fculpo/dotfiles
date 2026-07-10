@@ -64,7 +64,8 @@
     ],
     "open_port": [
       9222,
-      5037
+      5037,
+      8787 // headroom
     ],
     "listen_port": [],
     "connect_port": [],
