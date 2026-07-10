@@ -181,8 +181,17 @@ autoload -Uz promptinit && promptinit && prompt powerlevel10k
 export TG_PROVIDER_CACHE=1
 
 nono-claude() {
-  nono run --allow-cwd --trust-proxy-ca \
+  # herdr detection under nono needs BOTH (neither works alone under the inner
+  # pty): HERDR_AGENT=claude so herdr trusts the pane is claude and does not
+  # override with process detection, AND the report_agent hook
+  # (~/.claude/hooks/herdr-nono-lifecycle.sh) which supplies presence+state over
+  # herdr's socket -- hence the socket grant. The stock claude session hook is
+  # suppressed for nono (settings.json) so its agent_session does not interfere.
+  local -a herdr_grant
+  [[ -n "$HERDR_SOCKET_PATH" ]] && herdr_grant=(--allow-unix-socket "$HERDR_SOCKET_PATH")
+  HERDR_AGENT=claude nono run --allow-cwd --trust-proxy-ca \
     --allow-unix-socket "$SSH_AUTH_SOCK" \
+    "${herdr_grant[@]}" \
     --profile claude-code-hardened -- claude --dangerously-skip-permissions "$@"
 }
 

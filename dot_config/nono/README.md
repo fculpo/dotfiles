@@ -20,8 +20,12 @@ workdir-rw are inherited). Adds only deltas:
 
 ```bash
 nono-claude() {
-  nono run --allow-cwd --trust-proxy-ca \
+  # herdr socket grant (dynamic path) for the report_agent hook; see "herdr" below.
+  local -a herdr_grant
+  [[ -n "$HERDR_SOCKET_PATH" ]] && herdr_grant=(--allow-unix-socket "$HERDR_SOCKET_PATH")
+  HERDR_AGENT=claude nono run --allow-cwd --trust-proxy-ca \
     --allow-unix-socket "$SSH_AUTH_SOCK" \
+    "${herdr_grant[@]}" \
     --profile claude-code-hardened -- \
     claude --dangerously-skip-permissions "$@"
 }
@@ -30,11 +34,48 @@ nono-claude() {
 - `--trust-proxy-ca`: lets Go tools (`gh`) trust nono's TLS-intercepting proxy.
 - `--allow-unix-socket "$SSH_AUTH_SOCK"`: ssh-agent for commit signing (dynamic
   launchd path, so it can't live in the profile).
+- `HERDR_AGENT=claude` + the `$HERDR_SOCKET_PATH` grant: make herdr detect the
+  session — see **herdr agent detection** below.
 - `--dangerously-skip-permissions`: safe because **nono is the boundary**;
   containment = the profile's grants + the egress filter.
 
 **Always `cd` into a project first** — never launch from `$HOME` (cwd would
 overlap nono's state root `~/.local/state/nono` and be refused).
+
+## herdr agent detection
+
+nono keeps claude on an **inner pty**, so herdr's foreground-process detection
+sees `nono` and never marks the pane as an agent. Making herdr detect it needs
+**both** of these (verified on macOS 2026-07 — neither works alone):
+
+1. **`HERDR_AGENT=claude`** on the `nono` command (in the launch function above).
+   Makes herdr trust the pane is claude and stop overriding with process
+   detection. Must be on the `nono` process herdr observes, so it is a command
+   prefix — not a profile `set_var`.
+2. **A `pane.report_agent` hook** at `~/.claude/hooks/herdr-nono-lifecycle.sh`
+   (chezmoi-managed) that reports presence + state over herdr's socket. Needs the
+   `$HERDR_SOCKET_PATH` grant in the launcher.
+
+The gate `HERDR_CLAUDE_LIFECYCLE=1` (in this profile's `environment.set_vars`)
+enables the hook **and** suppresses herdr's stock claude session hook for nono
+(its `agent_session` would flip herdr back to process detection and break the
+above). Trade-off: nono panes get live detection + state, but not herdr
+session-**resume**.
+
+**Not chezmoi-managed** (Claude Code writes to `settings.json`): add these hook
+entries to `~/.claude/settings.json` by hand. Gate the stock herdr hook and add
+ours on the five lifecycle events:
+
+```jsonc
+// SessionStart "*" matcher — gate the stock hook, add ours:
+{ "command": "[ \"${HERDR_CLAUDE_LIFECYCLE:-}\" = 1 ] || bash '~/.claude/hooks/herdr-agent-state.sh' session", "type": "command", "timeout": 10 },
+{ "command": "sh '~/.claude/hooks/herdr-nono-lifecycle.sh'", "type": "command", "timeout": 10 }
+// plus a matcher:"*" -> sh '~/.claude/hooks/herdr-nono-lifecycle.sh' under each of:
+//   UserPromptSubmit, Stop, SessionEnd, Notification
+```
+
+(herdr's docs present `HERDR_AGENT` as sufficient and warn against `report_agent`
+hooks; that guidance did not hold for nono's inner-pty model on macOS.)
 
 ## Per-workflow
 

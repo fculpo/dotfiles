@@ -81,7 +81,11 @@
     "sandbox_policy": null
   },
   "env_credentials": {},
-  "environment": null,
+  "environment": {
+    "set_vars": {
+      "HERDR_CLAUDE_LIFECYCLE": "1"
+    }
+  },
   "command_policies": {},
   "credential_capture": {},
   "credential_providers": {},
