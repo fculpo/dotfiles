@@ -180,6 +180,12 @@ autoload -Uz promptinit && promptinit && prompt powerlevel10k
 
 export TG_PROVIDER_CACHE=1
 
+nono-claude() {
+  nono run --allow-cwd --trust-proxy-ca \
+    --allow-unix-socket "$SSH_AUTH_SOCK" \
+    --profile claude-code-hardened -- claude --dangerously-skip-permissions "$@"
+}
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
