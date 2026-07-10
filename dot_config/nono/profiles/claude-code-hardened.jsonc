@@ -26,7 +26,9 @@
   "filesystem": {
     "allow": [
       "$HOME/.npm",
-      "$HOME/.nono-share"
+      "$HOME/.nono-share",
+      "$HOME/workspace",
+      "$HOME/.cache/codebase-memory-mcp"
     ],
     "read": [
       "$HOME/.local/share/mise",
@@ -34,10 +36,10 @@
       "$HOME/.config/glab-cli",
       "~/.agents/skills"
     ],
-    "write": [
-      "$HOME/workspace"
+    "write": [],
+    "allow_file": [
+      "$HOME/.claude.json"
     ],
-    "allow_file": [],
     "read_file": [
       "$HOME/.gitconfig.local"
     ],
@@ -48,7 +50,9 @@
     "unix_socket_dir_bind": [],
     "unix_socket_subtree": [],
     "unix_socket_subtree_bind": [],
-    "deny": [],
+    "deny": [
+      ".envrc"
+    ],
     "bypass_protection": [],
     "suppress_save_prompt": [
       "~/"
@@ -60,7 +64,9 @@
     "network_profile": "claude-code",
     "allow_domain": [
       "api.supabase.com",
-      "mcp.supabase.com"
+      "mcp.supabase.com",
+      "registry.nono.sh",
+      "nono.sh"
     ],
     "open_port": [
       9222,
@@ -84,10 +90,10 @@
   "env_credentials": {},
   "environment": {
     "set_vars": {
-      "HERDR_CLAUDE_LIFECYCLE": "1"
+      "HERDR_CLAUDE_LIFECYCLE": "1",
+      "CLAUDE_CONFIG_DIR": "$HOME/.claude"
     }
   },
-  "command_policies": {},
   "credential_capture": {},
   "credential_providers": {},
   "credential_routes": [],

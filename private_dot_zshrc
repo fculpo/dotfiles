@@ -179,6 +179,7 @@ add-zsh-hook precmd _register_bashcompl
 autoload -Uz promptinit && promptinit && prompt powerlevel10k
 
 export TG_PROVIDER_CACHE=1
+export CLAUDE_CONFIG_DIR="$HOME/.claude"
 
 nono-claude() {
   # herdr detection under nono needs BOTH (neither works alone under the inner
