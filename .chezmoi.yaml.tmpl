@@ -19,11 +19,11 @@
 {{-   $email = promptString "email" $email -}}
 {{- end -}}
 
-{{- $gpgkey := "" -}}
-{{- if hasKey . "gpgkey" -}}
-{{-   $gpgkey = .gpgkey -}}
+{{- $sshkey := "" -}}
+{{- if hasKey . "sshkey" -}}
+{{-   $sshkey = .sshkey -}}
 {{- else if $interactive -}}
-{{-   $gpgkey = promptString "gpgkey" -}}
+{{-   $sshkey = promptString "sshkey" -}}
 {{- end -}}
 
 {{- if $interactive -}}
@@ -41,4 +41,4 @@ data:
   name: {{ $name | quote }}
   email: {{ $email | quote }}
   osid: {{ $osid | quote }}
-  gpgkey: {{ $gpgkey | quote }}
+  sshkey: {{ $sshkey | quote }}

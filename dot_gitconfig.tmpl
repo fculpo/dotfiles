@@ -1,8 +1,8 @@
 [user]
     name = Fabien Culpo
     email = {{ .email | quote }}
-{{- if and (hasKey . "gpgkey") .gpgkey }}
-    signingkey = {{ .gpgkey }}
+{{- if and (hasKey . "sshkey") .sshkey }}
+    signingkey = {{ .sshkey }}
 {{- end }}
 
 [core]
@@ -34,20 +34,20 @@
     useRelativePaths = false
 
 [commit]
-{{- if and (hasKey . "gpgkey") .gpgkey }}
+{{- if and (hasKey . "sshkey") .sshkey }}
     gpgsign = true
 {{- end }}
 
 [tag]
-{{- if and (hasKey . "gpgkey") .gpgkey }}
+{{- if and (hasKey . "sshkey") .sshkey }}
     gpgsign = true
 {{- end }}
 
-{{ if eq .chezmoi.os "darwin" -}}
 [gpg]
-    program = /opt/homebrew/bin/gpg
+    format = ssh
 
-{{ end -}}
+[gpg "ssh"]
+    allowedSignersFile = ~/.ssh/allowed_signers
 
 [include]
     path = ~/.gitconfig.local

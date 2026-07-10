@@ -3,6 +3,7 @@
 "npm:@devcontainers/cli" = "latest"
 "npm:@google/gemini-cli" = "latest"
 "npm:@openai/codex" = "latest"
+"npm:openwiki" = "0.1.0"
 bat = "latest"
 bun = "latest"
 delta = "latest"
@@ -15,6 +16,7 @@ glab = "latest"
 lsd = "latest"
 node = "lts/krypton"
 ripgrep = "latest"
+ruby = "4.0"
 usage = "latest"
 uv = "latest"
 zoxide = "latest"
@@ -41,8 +43,12 @@ pre-commit = "latest"
 shellcheck = "latest"
 syft = "latest"
 trivy = "latest"
+herdr = "latest"
 
 [settings]
 
 [settings.npm]
 package_manager = "bun"
+
+[settings.ruby]
+compile = false
