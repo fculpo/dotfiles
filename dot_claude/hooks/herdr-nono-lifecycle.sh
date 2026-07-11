@@ -9,8 +9,10 @@
 # untouched. Uses a distinct source so it does not collide with the stock hook.
 #
 # Registered in ~/.claude/settings.json (NOT chezmoi-managed -- Claude Code writes
-# to that file) on SessionStart/UserPromptSubmit/Stop/SessionEnd/Notification;
-# see ~/.config/nono/README.md for the exact entries.
+# to that file) on SessionStart/UserPromptSubmit/Stop/SessionEnd/Notification,
+# plus PostToolUse with matcher AskUserQuestion|ExitPlanMode: answering an
+# interactive tool is a tool result, not a prompt, so without it the pane would
+# stay "blocked" until Stop. See ~/.config/nono/README.md for the exact entries.
 set -eu
 
 hook_input_file="$(mktemp "${TMPDIR:-/tmp}/herdr-nono-lifecycle.XXXXXX")" || exit 0
@@ -57,6 +59,7 @@ states = {
     "UserPromptSubmit": "working",
     "Stop": "idle",
     "Notification": "blocked",
+    "PostToolUse": "working",
 }
 
 if event == "SessionEnd":
