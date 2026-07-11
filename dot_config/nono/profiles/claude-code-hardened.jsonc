@@ -1,123 +1,23 @@
 {
+  // Default Claude Code profile: claude-code-base + egress filtering.
+  // network_profile is the real containment (see ../README.md); allow_domain widens
+  // the proxy allowlist for hosts the claude-code network policy does not cover.
   "extends": [
-    "claude-code"
+    "claude-code-base"
   ],
   "meta": {
     "name": "",
     "version": "",
-    "description": null,
+    "description": "Claude Code sandbox with egress filtering",
     "author": null
   },
-  "security": {
-    "signal_mode": null,
-    "process_info_mode": null,
-    "ipc_mode": null,
-    "capability_elevation": null,
-    "wsl2_proxy_policy": null
-  },
-  "groups": {
-    "include": [],
-    "exclude": []
-  },
-  "commands": {
-    "allow": [],
-    "deny": []
-  },
-  "filesystem": {
-    "allow": [
-      "$HOME/.npm",
-      "$HOME/.nono-share",
-      "$HOME/workspace",
-      "$HOME/.cache/codebase-memory-mcp"
-    ],
-    "read": [
-      "$HOME/.local/share/mise",
-      "$HOME/.config/gh",
-      "$HOME/.config/glab-cli",
-      "~/.agents/skills"
-    ],
-    "write": [],
-    "allow_file": [
-      "$HOME/.claude.json"
-    ],
-    "read_file": [
-      "$HOME/.gitconfig.local"
-    ],
-    "write_file": [],
-    "unix_socket": [],
-    "unix_socket_bind": [],
-    "unix_socket_dir": [],
-    "unix_socket_dir_bind": [],
-    "unix_socket_subtree": [],
-    "unix_socket_subtree_bind": [],
-    "deny": [
-      ".envrc"
-    ],
-    "bypass_protection": [],
-    "suppress_save_prompt": [
-      "~/"
-    ]
-  },
   "network": {
-    "block": false,
-    "allow_http2": false,
     "network_profile": "claude-code",
     "allow_domain": [
       "api.supabase.com",
       "mcp.supabase.com",
       "registry.nono.sh",
       "nono.sh"
-    ],
-    "open_port": [
-      9222,
-      5037,
-      8787 // headroom
-    ],
-    "listen_port": [],
-    "connect_port": [],
-    "custom_credentials": {},
-    "tls_intercept": null,
-    "upstream_proxy": null,
-    "upstream_bypass": []
-  },
-  "diagnostics": {
-    "suppress_system_services": []
-  },
-  "linux": {
-    "af_unix_mediation": null,
-    "sandbox_policy": null
-  },
-  "env_credentials": {},
-  "environment": {
-    "set_vars": {
-      "HERDR_CLAUDE_LIFECYCLE": "1",
-      "CLAUDE_CONFIG_DIR": "$HOME/.claude"
-    }
-  },
-  "credential_capture": {},
-  "credential_providers": {},
-  "credential_routes": [],
-  "workdir": {
-    "access": "none"
-  },
-  "hooks": {},
-  "session_hooks": {},
-  "rollback": {
-    "exclude_patterns": [],
-    "exclude_globs": []
-  },
-  "open_urls": {
-    "allow_origins": [
-      "https://api.supabase.com"
     ]
-  },
-  "allow_launch_services": null,
-  "allow_gpu": null,
-  "allow_parent_of_protected": null,
-  "interactive": false,
-  "skipdirs": [],
-  "packs": [],
-  "binary": null,
-  "command_args": [],
-  "unsafe_macos_seatbelt_rules": []
+  }
 }
