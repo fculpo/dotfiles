@@ -33,10 +33,22 @@
   },
   "filesystem": {
     "allow": [
-      "$HOME/.npm",
+      "$HOME/.cache",
+      "$HOME/.cache/codebase-memory-mcp",
+      "$HOME/.claude/hooks/",
+      "$HOME/.config",
+      "$HOME/.dart-tool",
+      "$HOME/.dartServer",
+      "$HOME/.headroom/",
+      "$HOME/.local/share/mise",
+      "$HOME/.local/share/state",
+      "$HOME/.local/share/tokensave",
+      "$HOME/.local/state/mise/",
       "$HOME/.nono-share",
-      "$HOME/workspace",
-      "$HOME/.cache/codebase-memory-mcp"
+      "$HOME/.npm",
+      "$HOME/.pub-cache",
+      "$HOME/.tokensave",
+      "$HOME/workspace"
     ],
     "read": [
       "$HOME/.local/share/mise",
@@ -92,7 +104,8 @@
   "environment": {
     "set_vars": {
       "HERDR_CLAUDE_LIFECYCLE": "1",
-      "CLAUDE_CONFIG_DIR": "$HOME/.claude"
+      "CLAUDE_CONFIG_DIR": "$HOME/.claude",
+      "ANTHROPIC_BASE_URL": "http://localhost:8787"
     }
   },
   "credential_capture": {},
