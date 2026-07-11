@@ -93,7 +93,7 @@ session-**resume**.
 
 **Not chezmoi-managed** (Claude Code writes to `settings.json`): add these hook
 entries to `~/.claude/settings.json` by hand. Gate the stock herdr hook and add
-ours on the five lifecycle events:
+ours on the five lifecycle events plus PostToolUse:
 
 ```jsonc
 // SessionStart "*" matcher — gate the stock hook, add ours:
@@ -101,6 +101,9 @@ ours on the five lifecycle events:
 { "command": "sh '~/.claude/hooks/herdr-nono-lifecycle.sh'", "type": "command", "timeout": 10 }
 // plus a matcher:"*" -> sh '~/.claude/hooks/herdr-nono-lifecycle.sh' under each of:
 //   UserPromptSubmit, Stop, SessionEnd, Notification
+// plus a matcher:"AskUserQuestion|ExitPlanMode" -> same command under PostToolUse:
+//   answering an interactive tool is a tool result (no UserPromptSubmit fires),
+//   so this is what flips herdr's "blocked" back to "working" mid-turn.
 ```
 
 (herdr's docs present `HERDR_AGENT` as sufficient and warn against `report_agent`
