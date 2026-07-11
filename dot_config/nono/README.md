@@ -1,37 +1,66 @@
 # Running Claude Code under nono
 
-One profile + one shell function. macOS. Validated 2026-07.
+Three profiles + two shell functions. macOS. Validated 2026-07.
 
-## Profile: `claude-code-hardened.jsonc`
+## Profiles
 
-Extends the built-in `claude-code` (so the **keychain**, git config, runtimes, and
-workdir-rw are inherited). Adds only deltas:
+`claude-code-base.jsonc` — extends the built-in `claude-code` (so the **keychain**,
+git config, runtimes, and workdir-rw are inherited). Everything except egress:
 
 - `filesystem.read`: `~/.local/share/mise` (mise tools), `~/.config/gh`,
   `~/.config/glab-cli`
 - `filesystem.write`: `~/workspace`
 - `filesystem.allow`: `~/.npm` (npx), `~/.nono-share`
-- `network.network_profile`: `claude-code` (egress filter — LLM APIs, registries,
-  github/gitlab, docs)
-- `network.open_port`: `9222` (browser CDP), `5037` (adb)
+- `network.open_port`: `9222` (browser CDP), `5037` (adb), `8787` (headroom)
 - `command_policies`: `{}` (NOT `null` — see gotchas)
 
-## Launch function (`~/.zshrc`, chezmoi'd)
+`claude-code-hardened.jsonc` — base + the egress filter. **The default.**
+
+- `network.network_profile`: `claude-code` (LLM APIs, registries, github/gitlab, docs)
+- `network.allow_domain`: supabase + nono registry hosts
+
+`claude-code-open.jsonc` — base, nothing added: no proxy runs, so **any host is
+reachable**. Filesystem confinement and policy groups are unchanged.
+
+Why base + two siblings, rather than `open` extending `hardened` and switching the
+filter off? nono's merge rules make that impossible: array fields like `allow_domain`
+are *appended* down the chain and a child can never remove an inherited entry, and
+**any** non-empty `allow_domain` turns the default-deny proxy on. `network_profile`
+is the one null-clearable field, but clearing it alone would leave the 4 inherited
+`allow_domain` entries as the *entire* allowlist — stricter, not open. So the
+unfiltered profile must never inherit the filter in the first place.
+
+There is **no nono CLI flag** for "unrestricted network". The network flags are
+`--block-net`, `--network-profile <name>`, `--allow-domain`, and the port flags —
+all of which only ever *narrow* egress. Unfiltered means: pick a profile with no
+`network_profile` and no `allow_domain`.
+
+## Launch functions (`~/.zshrc`, chezmoi'd)
+
+`nono-claude` (hardened, default) and `nono-claude-open` (unrestricted egress) share
+one helper and differ only by profile:
 
 ```bash
-nono-claude() {
+_nono-claude() {
   # herdr socket grant (dynamic path) for the report_agent hook; see "herdr" below.
-  local -a herdr_grant
+  local profile=$1; shift
+  local -a herdr_grant proxy_grant
   [[ -n "$HERDR_SOCKET_PATH" ]] && herdr_grant=(--allow-unix-socket "$HERDR_SOCKET_PATH")
-  HERDR_AGENT=claude nono run --allow-cwd --trust-proxy-ca \
+  [[ $profile == claude-code-hardened ]] && proxy_grant=(--trust-proxy-ca)
+  HERDR_AGENT=claude nono run --allow-cwd "${proxy_grant[@]}" \
     --allow-unix-socket "$SSH_AUTH_SOCK" \
     "${herdr_grant[@]}" \
-    --profile claude-code-hardened -- \
+    --profile "$profile" -- \
     claude --dangerously-skip-permissions "$@"
 }
+
+nono-claude()      { _nono-claude claude-code-hardened "$@" }
+nono-claude-open() { _nono-claude claude-code-open "$@" }
 ```
 
 - `--trust-proxy-ca`: lets Go tools (`gh`) trust nono's TLS-intercepting proxy.
+  Hardened only — under `claude-code-open` no proxy runs, so there is no CA to trust
+  and TLS goes direct.
 - `--allow-unix-socket "$SSH_AUTH_SOCK"`: ssh-agent for commit signing (dynamic
   launchd path, so it can't live in the profile).
 - `HERDR_AGENT=claude` + the `$HERDR_SOCKET_PATH` grant: make herdr detect the

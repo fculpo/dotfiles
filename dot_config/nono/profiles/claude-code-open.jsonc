@@ -1,0 +1,15 @@
+{
+  // claude-code-base with no egress filter: the proxy never starts, so Claude Code
+  // can reach any host. Filesystem confinement, policy groups and command policy are
+  // unchanged -- only network containment is dropped. Use for tasks that need
+  // arbitrary hosts (scraping, unknown registries); prefer claude-code-hardened.
+  "extends": [
+    "claude-code-base"
+  ],
+  "meta": {
+    "name": "",
+    "version": "",
+    "description": "Claude Code sandbox with unrestricted egress",
+    "author": null
+  }
+}

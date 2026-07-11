@@ -181,20 +181,31 @@ autoload -Uz promptinit && promptinit && prompt powerlevel10k
 export TG_PROVIDER_CACHE=1
 export CLAUDE_CONFIG_DIR="$HOME/.claude"
 
-nono-claude() {
+_nono-claude() {
   # herdr detection under nono needs BOTH (neither works alone under the inner
   # pty): HERDR_AGENT=claude so herdr trusts the pane is claude and does not
   # override with process detection, AND the report_agent hook
   # (~/.claude/hooks/herdr-nono-lifecycle.sh) which supplies presence+state over
   # herdr's socket -- hence the socket grant. The stock claude session hook is
   # suppressed for nono (settings.json) so its agent_session does not interfere.
-  local -a herdr_grant
+  local profile=$1; shift
+  local -a herdr_grant proxy_grant
   [[ -n "$HERDR_SOCKET_PATH" ]] && herdr_grant=(--allow-unix-socket "$HERDR_SOCKET_PATH")
-  HERDR_AGENT=claude nono run --allow-cwd --trust-proxy-ca \
+  # Only the filtering profile runs the TLS-intercepting proxy; without it there is
+  # no nono CA for gh/Go tools to trust.
+  [[ $profile == claude-code-hardened ]] && proxy_grant=(--trust-proxy-ca)
+  HERDR_AGENT=claude nono run --allow-cwd "${proxy_grant[@]}" \
     --allow-unix-socket "$SSH_AUTH_SOCK" \
     "${herdr_grant[@]}" \
-    --profile claude-code-hardened -- claude --dangerously-skip-permissions "$@"
+    --profile "$profile" -- claude --dangerously-skip-permissions "$@"
 }
+
+nono-claude() { _nono-claude claude-code-hardened "$@" }
+
+# Same sandbox, no egress filter: Claude can reach any host. Filesystem
+# confinement still applies. Reach for this only when a task needs arbitrary
+# hosts -- egress filtering is the real containment (see ~/.config/nono/README.md).
+nono-claude-open() { _nono-claude claude-code-open "$@" }
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
