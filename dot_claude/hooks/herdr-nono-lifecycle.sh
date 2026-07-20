@@ -1,24 +1,23 @@
 #!/bin/sh
 # Reports Claude Code lifecycle state to herdr via pane.report_agent, for claude
-# running under nono. nono keeps claude on an inner pty, so herdr's process
-# detection sees `nono` and never labels the pane. herdr accepts report_agent
-# ONLY for panes created via `herdr agent start` under a name that is NOT a
-# known agent (the exact name "claude" triggers Claude's screen-only policy and
-# reports are silently dropped -- verified herdr 0.7.4, 2026-07). The launcher
-# (_nono-claude in ~/.zshrc) starts such a pane with a unique claude-<dir>-<n>
-# name and injects HERDR_CLAUDE_LIFECYCLE=1 via `agent start --env`, which
-# gates this hook so direct / non-nono sessions are untouched. Uses a distinct
-# source so it does not collide with the stock session hook.
+# running under nono in the user's CURRENT pane. nono keeps claude on an inner
+# pty, so herdr's process detection sees `nono`, never labels the pane, and the
+# screen manifest never runs (HERDR_AGENT is Linux-only) -- so this hook pushes
+# state instead. The launcher (_nono-claude in ~/.zshrc) sets
+# HERDR_CLAUDE_LIFECYCLE=1 when inside herdr, which gates this hook so direct /
+# non-nono sessions are untouched. Uses a distinct source so it does not
+# collide with the stock session hook.
 #
 # Registered in ~/.claude/settings.json (NOT chezmoi-managed -- Claude Code writes
-# to that file) on SessionStart/UserPromptSubmit/Stop/Notification, plus
-# PostToolUse with matcher AskUserQuestion|ExitPlanMode: answering an
+# to that file) on SessionStart/UserPromptSubmit/Stop/SessionEnd/Notification,
+# plus PostToolUse with matcher AskUserQuestion|ExitPlanMode: answering an
 # interactive tool is a tool result, not a prompt, so without it the pane would
 # stay "blocked" until Stop. The stock herdr session hook is GATED OFF under
 # nono (same settings.json): its herdr:claude agent_session switches the pane to
-# Claude's official integration policy, which silently drops report_agent from
-# any other source. This hook sends the session id/transcript inside its own
-# report_agent instead. See ~/.config/nono/README.md.
+# Claude's official integration policy, and herdr then silently drops
+# report_agent from every other source (verified herdr 0.7.4, 2026-07). This
+# hook sends the session id/transcript inside its own report_agent instead.
+# See ~/.config/nono/README.md.
 set -eu
 
 hook_input_file="$(mktemp "${TMPDIR:-/tmp}/herdr-nono-lifecycle.XXXXXX")" || exit 0
@@ -68,28 +67,32 @@ states = {
     "PostToolUse": "working",
 }
 
-# No pane.release_agent, ever: SessionEnd also fires on /clear and on nested
-# `claude -p` runs inside the pane, and a release poisons the pane's state
-# authority (later reports are silently dropped). The agent-start pane closes
-# with the process, and herdr clears state on pane close, so release is
-# unnecessary.
-state = states.get(event)
-if state is None:
-    raise SystemExit(0)
-method = "pane.report_agent"
-params = {
-    "pane_id": pane_id,
-    "source": source,
-    "agent": "claude",
-    "state": state,
-    "seq": seq,
-}
-session_id = hook_input.get("session_id")
-if isinstance(session_id, str) and session_id:
-    params["agent_session_id"] = session_id
-transcript_path = hook_input.get("transcript_path")
-if isinstance(transcript_path, str) and transcript_path:
-    params["agent_session_path"] = transcript_path
+# SessionEnd -> release: claude runs in the user's own pane, so when it exits
+# the pane must return to plain-shell display. Releases are harmless on a
+# session-gated pane (verified: same/fresh sources report fine afterwards), so
+# the spurious SessionEnds from /clear or nested `claude -p` runs just cause a
+# brief flicker that the next hook event corrects.
+if event == "SessionEnd":
+    method = "pane.release_agent"
+    params = {"pane_id": pane_id, "source": source, "agent": "claude", "seq": seq}
+else:
+    state = states.get(event)
+    if state is None:
+        raise SystemExit(0)
+    method = "pane.report_agent"
+    params = {
+        "pane_id": pane_id,
+        "source": source,
+        "agent": "claude",
+        "state": state,
+        "seq": seq,
+    }
+    session_id = hook_input.get("session_id")
+    if isinstance(session_id, str) and session_id:
+        params["agent_session_id"] = session_id
+    transcript_path = hook_input.get("transcript_path")
+    if isinstance(transcript_path, str) and transcript_path:
+        params["agent_session_path"] = transcript_path
 
 request = {"id": request_id, "method": method, "params": params}
 try:

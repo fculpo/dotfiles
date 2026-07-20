@@ -42,27 +42,17 @@ one helper and differ only by profile:
 
 ```bash
 _nono-claude() {
-  # Inside herdr, launch the sandbox inside a herdr-labelled agent pane so herdr
-  # reports it (see "herdr agent detection" below). The socket grant lets the
-  # stock session hook inside the sandbox report identity/resume.
+  # Runs claude (under nono) in the CURRENT pane; on exit you are back at your
+  # shell. Inside herdr, HERDR_CLAUDE_LIFECYCLE=1 gates the report hook that
+  # pushes idle/working/blocked over the herdr socket (see below).
   local profile=$1; shift
-  local -a herdr_grant proxy_grant ssh_grant
+  local -a herdr_grant proxy_grant ssh_grant env_prefix
   [[ -n "$HERDR_SOCKET_PATH" ]] && herdr_grant=(--allow-unix-socket "$HERDR_SOCKET_PATH")
   [[ -n "$SSH_AUTH_SOCK" ]] && ssh_grant=(--allow-unix-socket "$SSH_AUTH_SOCK")
   [[ $profile == claude-code-hardened ]] && proxy_grant=(--trust-proxy-ca)
-  # herdr agent start uses herdr's own PATH (no mise), so pass nono's abs path.
-  local nono_bin; nono_bin=$(command -v nono) || return 1
-  if [[ "${HERDR_ENV:-}" == 1 ]] && command -v herdr >/dev/null 2>&1; then
-    # claude-<dir>, suffixed -2/-3/... only on name collision (see zshrc for
-    # the retry loop; names must be unique and bare "claude" is reserved).
-    herdr agent start "claude-${${PWD:t}//[^A-Za-z0-9._-]/-}" --cwd "$PWD" \
-      --split right --env HERDR_CLAUDE_LIFECYCLE=1 -- \
-      "$nono_bin" run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
-      --profile "$profile" -- claude --dangerously-skip-permissions "$@"
-  else
-    "$nono_bin" run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" \
-      --profile "$profile" -- claude --dangerously-skip-permissions "$@"
-  fi
+  [[ "${HERDR_ENV:-}" == 1 ]] && env_prefix=(HERDR_CLAUDE_LIFECYCLE=1)
+  env "${env_prefix[@]}" nono run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
+    --profile "$profile" -- claude --dangerously-skip-permissions "$@"
 }
 
 nono-claude()      { _nono-claude claude-code-hardened "$@" }
@@ -74,10 +64,9 @@ nono-claude-open() { _nono-claude claude-code-open "$@" }
   and TLS goes direct.
 - `--allow-unix-socket "$SSH_AUTH_SOCK"`: ssh-agent for commit signing (dynamic
   launchd path, so it can't live in the profile).
-- `herdr agent start <unique-name>` (when inside herdr) + the report hook over
-  the `$HERDR_SOCKET_PATH` grant: make herdr show the session and its state —
-  see **herdr agent detection** below. Outside herdr the helper runs `nono`
-  directly.
+- `HERDR_CLAUDE_LIFECYCLE=1` (when inside herdr) + the `$HERDR_SOCKET_PATH`
+  grant: enable the report hook that makes herdr show the session's state --
+  see **herdr agent detection** below.
 - `--dangerously-skip-permissions`: safe because **nono is the boundary**;
   containment = the profile's grants + the egress filter.
 
@@ -87,57 +76,37 @@ overlap nono's state root `~/.local/state/nono` and be refused).
 ## herdr agent detection
 
 nono keeps claude on an **inner pty**, so herdr's foreground-process detection
-sees `nono` and never labels the pane as an agent. What does and doesn't work
-(all verified macOS, herdr 0.7.4, 2026-07):
+sees `nono` and never labels the pane, and the claude **screen manifest never
+runs** (it needs a process-detected label; `HERDR_AGENT` is a Linux-only hint;
+process->agent mapping is baked into the herdr binary). All verified on macOS,
+herdr 0.7.4, 2026-07. So state is **pushed** instead:
 
-- **`HERDR_AGENT=claude` env hint** — inert on macOS (Linux `/proc` mechanism),
-  even when injected by herdr itself via `agent start --env`. No label, ever.
-- **The claude screen manifest** — unreachable: it only runs on panes with a
-  detected agent label, and nothing can produce one under nono on macOS
-  (process→agent mapping is baked into the herdr binary; local manifest
-  overrides only patch screen rules for already-identified agents).
-- **`herdr agent start claude`** — the pane gets an agent *name* but no durable
-  label, and worse: the exact name `claude` (a known agent) makes herdr enforce
-  Claude's screen-only integration policy, so `pane.report_agent` is **silently
-  dropped** (returns `{"type":"ok"}`, changes nothing).
-- **`herdr agent start <any-other-name>`** — the pane becomes an "unsupported
-  agent" in herdr's model, and **`pane.report_agent` works** (first source to
-  report holds authority; per-source `seq` must increase — the hook uses
-  `time.time_ns()`).
-
-**The working recipe** (what `_nono-claude` in `~/.zshrc` does when inside
-herdr, `HERDR_ENV=1`):
-
-```bash
-herdr agent start "claude-${PWD:t}" --cwd "$PWD" --split right \
-  --env HERDR_CLAUDE_LIFECYCLE=1 -- nono run … --profile <p> -- claude …
-# name suffixed -2/-3/... only when that exact name is already running
-```
-
-- **Unique non-reserved name** per session: reports are accepted, and several
-  sessions can run side by side (names must be unique; a second
-  `agent start claude` fails with `agent_name_taken`).
-- **`--env HERDR_CLAUDE_LIFECYCLE=1`** gates the report hook to exactly these
-  panes (scoped better than the old profile-wide `set_vars` gate, which stays
-  removed from `claude-code-base.jsonc`).
 - **`~/.claude/hooks/herdr-nono-lifecycle.sh`** (chezmoi-managed) reports
-  `idle`/`working`/`blocked` over `$HERDR_SOCKET_PATH` (hence the socket grant)
-  from five `settings.json` hook events: SessionStart/UserPromptSubmit/Stop/
+  `idle`/`working`/`blocked` for the **current pane** via `pane.report_agent`
+  over `$HERDR_SOCKET_PATH` (hence the socket grant), gated on
+  `HERDR_CLAUDE_LIFECYCLE=1` (set by the launcher only inside herdr). Six
+  `settings.json` events: SessionStart/UserPromptSubmit/Stop/SessionEnd/
   Notification + PostToolUse `AskUserQuestion|ExitPlanMode`. It sends the
-  session id/transcript inside `report_agent`. It never sends
-  `pane.release_agent` — SessionEnd also fires on `/clear` and on nested
-  `claude -p` runs, and a release poisons the pane (later reports silently
-  dropped); the pane closes with the process anyway.
-  Known limitation (inherent to CC hooks): permission approvals and Esc
-  interrupts fire no hook, so a stale state can persist until the next event.
+  session id/transcript inside the report, uses `seq = time_ns` (herdr ignores
+  non-increasing seq per source), and on SessionEnd sends `pane.release_agent`
+  so the pane returns to plain-shell display when claude exits. Spurious
+  SessionEnds (`/clear`, nested `claude -p`) just flicker and self-correct on
+  the next event.
 - **The stock claude session hook** (`herdr-agent-state.sh`) is **gated OFF
   under nono** in `settings.json`
-  (`[ "${HERDR_CLAUDE_LIFECYCLE:-}" = 1 ] || bash … session`): its
-  `herdr:claude` `agent_session` switches the pane to Claude's official
-  integration policy, and herdr then **silently drops `report_agent` from every
-  other source** — this is what froze states on green-check. Trade-off: no
-  official session-resume under nono (the hook's in-report session reference
-  may or may not restore).
+  (`[ "${HERDR_CLAUDE_LIFECYCLE:-}" = 1 ] || bash ... session`): once its
+  `herdr:claude` `agent_session` touches a pane, herdr switches the pane to
+  Claude's official integration policy and **silently drops `report_agent`
+  from every other source** (states freeze). Trade-off: no official
+  session-resume under nono.
+- **Do not use `herdr agent start` for this**: its pane dies with the process,
+  its child PATH lacks mise, names must be unique, and it adds nothing --
+  plain panes accept `pane.report_agent` fine as long as no `herdr:claude`
+  session is attached.
+
+Debugging: `herdr agent explain <pane> --json`, `herdr pane get <pane>`,
+`herdr pane process-info --pane <pane>`. Beware: `pane.report_agent` returns
+`{"type":"ok"}` even when a report is silently dropped.
 
 ## Per-workflow
 
