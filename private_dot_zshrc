@@ -182,15 +182,16 @@ export TG_PROVIDER_CACHE=1
 export CLAUDE_CONFIG_DIR="$HOME/.claude"
 
 # herdr reporting under nono. nono holds claude on an inner pty, so herdr's
-# process detection sees `nono` and never labels the pane -- and herdr >=0.7.x
-# silently drops pane.report_agent for unlabeled panes (the old report_agent
-# hook + HERDR_AGENT env hint both proved inert on macOS, 2026-07). So when we
-# are already inside herdr, launch the sandbox *inside a herdr-labelled agent
-# pane* via `herdr agent start claude`: the label makes herdr's bundled claude
-# screen manifest classify idle/working/blocked, and the stock session hook
-# (herdr-agent-state.sh, inside the sandbox, over $HERDR_SOCKET_PATH) supplies
-# session identity + resume -- i.e. full standard-session reporting. Outside
-# herdr, run nono directly. See ~/.config/nono/README.md.
+# process detection sees `nono` and never labels the pane; the HERDR_AGENT env
+# hint is Linux-only. herdr accepts pane.report_agent ONLY for panes created by
+# `herdr agent start` under a name that is NOT a known agent -- the exact name
+# "claude" makes herdr enforce Claude's screen-only policy and silently drop
+# reports (verified herdr 0.7.4, 2026-07). So: start the pane under a unique
+# non-reserved name, and inject HERDR_CLAUDE_LIFECYCLE=1 so the report_agent
+# hook (~/.claude/hooks/herdr-nono-lifecycle.sh) supplies idle/working/blocked
+# over $HERDR_SOCKET_PATH (hence the socket grant). The stock session hook
+# supplies session identity. Unique names also allow several sessions at once.
+# Outside herdr, run nono directly. See ~/.config/nono/README.md.
 _nono-claude() {
   local profile=$1; shift
   local -a herdr_grant proxy_grant ssh_grant
@@ -204,7 +205,9 @@ _nono-claude() {
   # interactive shell where mise is active).
   local nono_bin; nono_bin=$(command -v nono) || { print -u2 "nono-claude: nono not found in PATH"; return 1; }
   if [[ "${HERDR_ENV:-}" == 1 ]] && command -v herdr >/dev/null 2>&1; then
-    herdr agent start claude --cwd "$PWD" --split right -- \
+    local agent_name="claude-${PWD:t}-${RANDOM}"
+    herdr agent start "$agent_name" --cwd "$PWD" --split right \
+      --env HERDR_CLAUDE_LIFECYCLE=1 -- \
       "$nono_bin" run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
       --profile "$profile" -- claude --dangerously-skip-permissions "$@"
   else
