@@ -50,12 +50,14 @@ _nono-claude() {
   [[ -n "$HERDR_SOCKET_PATH" ]] && herdr_grant=(--allow-unix-socket "$HERDR_SOCKET_PATH")
   [[ -n "$SSH_AUTH_SOCK" ]] && ssh_grant=(--allow-unix-socket "$SSH_AUTH_SOCK")
   [[ $profile == claude-code-hardened ]] && proxy_grant=(--trust-proxy-ca)
+  # herdr agent start uses herdr's own PATH (no mise), so pass nono's abs path.
+  local nono_bin; nono_bin=$(command -v nono) || return 1
   if [[ "${HERDR_ENV:-}" == 1 ]] && command -v herdr >/dev/null 2>&1; then
     herdr agent start claude --cwd "$PWD" -- \
-      nono run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
+      "$nono_bin" run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
       --profile "$profile" -- claude --dangerously-skip-permissions "$@"
   else
-    nono run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" \
+    "$nono_bin" run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" \
       --profile "$profile" -- claude --dangerously-skip-permissions "$@"
   fi
 }
