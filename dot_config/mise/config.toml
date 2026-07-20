@@ -44,6 +44,7 @@ syft = "latest"
 trivy = "latest"
 herdr = "latest"
 nono = "latest"
+markdownlint-cli2 = "latest"
 
 [settings]
 
