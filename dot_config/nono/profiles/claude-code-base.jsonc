@@ -127,7 +127,8 @@
   },
   "open_urls": {
     "allow_origins": [
-      "https://api.supabase.com"
+      "https://api.supabase.com",
+      "https://claude.com"
     ]
   },
   "allow_launch_services": null,
