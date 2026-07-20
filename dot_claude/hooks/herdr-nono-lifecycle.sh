@@ -11,10 +11,14 @@
 # source so it does not collide with the stock session hook.
 #
 # Registered in ~/.claude/settings.json (NOT chezmoi-managed -- Claude Code writes
-# to that file) on SessionStart/UserPromptSubmit/Stop/SessionEnd/Notification,
-# plus PostToolUse with matcher AskUserQuestion|ExitPlanMode: answering an
+# to that file) on SessionStart/UserPromptSubmit/Stop/Notification, plus
+# PostToolUse with matcher AskUserQuestion|ExitPlanMode: answering an
 # interactive tool is a tool result, not a prompt, so without it the pane would
-# stay "blocked" until Stop. See ~/.config/nono/README.md for the exact entries.
+# stay "blocked" until Stop. The stock herdr session hook is GATED OFF under
+# nono (same settings.json): its herdr:claude agent_session switches the pane to
+# Claude's official integration policy, which silently drops report_agent from
+# any other source. This hook sends the session id/transcript inside its own
+# report_agent instead. See ~/.config/nono/README.md.
 set -eu
 
 hook_input_file="$(mktemp "${TMPDIR:-/tmp}/herdr-nono-lifecycle.XXXXXX")" || exit 0
@@ -64,27 +68,28 @@ states = {
     "PostToolUse": "working",
 }
 
-if event == "SessionEnd":
-    method = "pane.release_agent"
-    params = {"pane_id": pane_id, "source": source, "agent": "claude", "seq": seq}
-else:
-    state = states.get(event)
-    if state is None:
-        raise SystemExit(0)
-    method = "pane.report_agent"
-    params = {
-        "pane_id": pane_id,
-        "source": source,
-        "agent": "claude",
-        "state": state,
-        "seq": seq,
-    }
-    session_id = hook_input.get("session_id")
-    if isinstance(session_id, str) and session_id:
-        params["agent_session_id"] = session_id
-    transcript_path = hook_input.get("transcript_path")
-    if isinstance(transcript_path, str) and transcript_path:
-        params["agent_session_path"] = transcript_path
+# No pane.release_agent, ever: SessionEnd also fires on /clear and on nested
+# `claude -p` runs inside the pane, and a release poisons the pane's state
+# authority (later reports are silently dropped). The agent-start pane closes
+# with the process, and herdr clears state on pane close, so release is
+# unnecessary.
+state = states.get(event)
+if state is None:
+    raise SystemExit(0)
+method = "pane.report_agent"
+params = {
+    "pane_id": pane_id,
+    "source": source,
+    "agent": "claude",
+    "state": state,
+    "seq": seq,
+}
+session_id = hook_input.get("session_id")
+if isinstance(session_id, str) and session_id:
+    params["agent_session_id"] = session_id
+transcript_path = hook_input.get("transcript_path")
+if isinstance(transcript_path, str) and transcript_path:
+    params["agent_session_path"] = transcript_path
 
 request = {"id": request_id, "method": method, "params": params}
 try:

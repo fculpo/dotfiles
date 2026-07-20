@@ -122,12 +122,22 @@ herdr agent start "claude-${PWD:t}" --cwd "$PWD" --split right \
   removed from `claude-code-base.jsonc`).
 - **`~/.claude/hooks/herdr-nono-lifecycle.sh`** (chezmoi-managed) reports
   `idle`/`working`/`blocked` over `$HERDR_SOCKET_PATH` (hence the socket grant)
-  from six `settings.json` hook events: SessionStart/UserPromptSubmit/Stop/
-  SessionEnd/Notification + PostToolUse `AskUserQuestion|ExitPlanMode`.
+  from five `settings.json` hook events: SessionStart/UserPromptSubmit/Stop/
+  Notification + PostToolUse `AskUserQuestion|ExitPlanMode`. It sends the
+  session id/transcript inside `report_agent`. It never sends
+  `pane.release_agent` — SessionEnd also fires on `/clear` and on nested
+  `claude -p` runs, and a release poisons the pane (later reports silently
+  dropped); the pane closes with the process anyway.
   Known limitation (inherent to CC hooks): permission approvals and Esc
   interrupts fire no hook, so a stale state can persist until the next event.
-- **The stock claude session hook** (`herdr-agent-state.sh`, ungated) reports
-  session identity alongside — it works fine under nono.
+- **The stock claude session hook** (`herdr-agent-state.sh`) is **gated OFF
+  under nono** in `settings.json`
+  (`[ "${HERDR_CLAUDE_LIFECYCLE:-}" = 1 ] || bash … session`): its
+  `herdr:claude` `agent_session` switches the pane to Claude's official
+  integration policy, and herdr then **silently drops `report_agent` from every
+  other source** — this is what froze states on green-check. Trade-off: no
+  official session-resume under nono (the hook's in-report session reference
+  may or may not restore).
 
 ## Per-workflow
 
