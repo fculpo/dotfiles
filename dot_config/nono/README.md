@@ -53,7 +53,7 @@ _nono-claude() {
   # herdr agent start uses herdr's own PATH (no mise), so pass nono's abs path.
   local nono_bin; nono_bin=$(command -v nono) || return 1
   if [[ "${HERDR_ENV:-}" == 1 ]] && command -v herdr >/dev/null 2>&1; then
-    herdr agent start claude --cwd "$PWD" -- \
+    herdr agent start claude --cwd "$PWD" --split right -- \
       "$nono_bin" run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
       --profile "$profile" -- claude --dangerously-skip-permissions "$@"
   else
