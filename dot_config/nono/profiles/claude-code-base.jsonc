@@ -33,6 +33,8 @@
   },
   "filesystem": {
     "allow": [
+      "$HOME/.android",
+      "$HOME/.bun",
       "$HOME/.cache",
       "$HOME/.cache/codebase-memory-mcp",
       "$HOME/.claude/hooks/",
@@ -54,9 +56,12 @@
       "$HOME/.pub-cache",
       "$HOME/.tokensave",
       "$HOME/Library/Developer/Xcode",
-      "$HOME/workspace",
+      "$HOME/.local/share/uv/tools",
+      "$HOME/workspace"
     ],
     "read": [
+      "$HOME/Downloads",
+      "$HOME/Library/Android",
       "$HOME/.local/share/mise",
       "$HOME/.config/gh",
       "$HOME/.config/glab-cli",
