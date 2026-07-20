@@ -182,53 +182,27 @@ export TG_PROVIDER_CACHE=1
 export CLAUDE_CONFIG_DIR="$HOME/.claude"
 
 # herdr reporting under nono. nono holds claude on an inner pty, so herdr's
-# process detection sees `nono` and never labels the pane; the HERDR_AGENT env
-# hint is Linux-only. herdr accepts pane.report_agent ONLY for panes created by
-# `herdr agent start` under a name that is NOT a known agent -- the exact name
-# "claude" makes herdr enforce Claude's screen-only policy and silently drop
-# reports (verified herdr 0.7.4, 2026-07). So: start the pane under a unique
-# non-reserved name, and inject HERDR_CLAUDE_LIFECYCLE=1 so the report_agent
-# hook (~/.claude/hooks/herdr-nono-lifecycle.sh) supplies idle/working/blocked
-# over $HERDR_SOCKET_PATH (hence the socket grant). The stock session hook
-# supplies session identity. Unique names also allow several sessions at once.
-# Outside herdr, run nono directly. See ~/.config/nono/README.md.
+# process detection sees `nono` and never labels the pane (HERDR_AGENT is
+# Linux-only), so screen-manifest states are unreachable -- state is pushed
+# instead by ~/.claude/hooks/herdr-nono-lifecycle.sh via pane.report_agent over
+# $HERDR_SOCKET_PATH (hence the socket grant), against the CURRENT pane.
+# HERDR_CLAUDE_LIFECYCLE=1 gates that hook (and gates OFF the stock herdr
+# session hook, whose herdr:claude agent_session would switch the pane to
+# Claude's official integration policy and silently drop our reports --
+# verified herdr 0.7.4, 2026-07). Runs in this pane: when claude exits you are
+# back at your shell, and the hook's SessionEnd release returns the pane to
+# plain-shell display. See ~/.config/nono/README.md.
 _nono-claude() {
   local profile=$1; shift
-  local -a herdr_grant proxy_grant ssh_grant
+  local -a herdr_grant proxy_grant ssh_grant env_prefix
   [[ -n "$HERDR_SOCKET_PATH" ]] && herdr_grant=(--allow-unix-socket "$HERDR_SOCKET_PATH")
   [[ -n "$SSH_AUTH_SOCK" ]] && ssh_grant=(--allow-unix-socket "$SSH_AUTH_SOCK")
   # Only the filtering profile runs the TLS-intercepting proxy; without it there is
   # no nono CA for gh/Go tools to trust.
   [[ $profile == claude-code-hardened ]] && proxy_grant=(--trust-proxy-ca)
-  # `herdr agent start` spawns the child with herdr's own PATH, which lacks the
-  # mise-managed `nono` -- so pass nono's absolute path (resolved here, in the
-  # interactive shell where mise is active).
-  local nono_bin; nono_bin=$(command -v nono) || { print -u2 "nono-claude: nono not found in PATH"; return 1; }
-  if [[ "${HERDR_ENV:-}" == 1 ]] && command -v herdr >/dev/null 2>&1; then
-    # Deterministic name: claude-<dir>; only suffix -2/-3/... if that exact
-    # name is already running (herdr agent names must be unique, and the bare
-    # name "claude" is reserved -- reports would be silently dropped).
-    local base_name="claude-${${PWD:t}//[^A-Za-z0-9._-]/-}" agent_name out
-    local -i try=1
-    agent_name=$base_name
-    while :; do
-      if out=$(herdr agent start "$agent_name" --cwd "$PWD" --split right \
-          --env HERDR_CLAUDE_LIFECYCLE=1 -- \
-          "$nono_bin" run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
-          --profile "$profile" -- claude --dangerously-skip-permissions "$@" 2>&1); then
-        return 0
-      fi
-      if [[ "$out" == *agent_name_taken* ]] && (( ++try <= 9 )); then
-        agent_name="${base_name}-${try}"
-      else
-        print -u2 -- "nono-claude: ${out}"
-        return 1
-      fi
-    done
-  else
-    "$nono_bin" run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" \
-      --profile "$profile" -- claude --dangerously-skip-permissions "$@"
-  fi
+  [[ "${HERDR_ENV:-}" == 1 ]] && env_prefix=(HERDR_CLAUDE_LIFECYCLE=1)
+  env "${env_prefix[@]}" nono run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
+    --profile "$profile" -- claude --dangerously-skip-permissions "$@"
 }
 
 nono-claude() { _nono-claude claude-code-hardened "$@" }
