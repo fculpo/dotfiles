@@ -181,23 +181,32 @@ autoload -Uz promptinit && promptinit && prompt powerlevel10k
 export TG_PROVIDER_CACHE=1
 export CLAUDE_CONFIG_DIR="$HOME/.claude"
 
+# herdr reporting under nono. nono holds claude on an inner pty, so herdr's
+# process detection sees `nono` and never labels the pane -- and herdr >=0.7.x
+# silently drops pane.report_agent for unlabeled panes (the old report_agent
+# hook + HERDR_AGENT env hint both proved inert on macOS, 2026-07). So when we
+# are already inside herdr, launch the sandbox *inside a herdr-labelled agent
+# pane* via `herdr agent start claude`: the label makes herdr's bundled claude
+# screen manifest classify idle/working/blocked, and the stock session hook
+# (herdr-agent-state.sh, inside the sandbox, over $HERDR_SOCKET_PATH) supplies
+# session identity + resume -- i.e. full standard-session reporting. Outside
+# herdr, run nono directly. See ~/.config/nono/README.md.
 _nono-claude() {
-  # herdr detection under nono needs BOTH (neither works alone under the inner
-  # pty): HERDR_AGENT=claude so herdr trusts the pane is claude and does not
-  # override with process detection, AND the report_agent hook
-  # (~/.claude/hooks/herdr-nono-lifecycle.sh) which supplies presence+state over
-  # herdr's socket -- hence the socket grant. The stock claude session hook is
-  # suppressed for nono (settings.json) so its agent_session does not interfere.
   local profile=$1; shift
-  local -a herdr_grant proxy_grant
+  local -a herdr_grant proxy_grant ssh_grant
   [[ -n "$HERDR_SOCKET_PATH" ]] && herdr_grant=(--allow-unix-socket "$HERDR_SOCKET_PATH")
+  [[ -n "$SSH_AUTH_SOCK" ]] && ssh_grant=(--allow-unix-socket "$SSH_AUTH_SOCK")
   # Only the filtering profile runs the TLS-intercepting proxy; without it there is
   # no nono CA for gh/Go tools to trust.
   [[ $profile == claude-code-hardened ]] && proxy_grant=(--trust-proxy-ca)
-  HERDR_AGENT=claude nono run --allow-cwd "${proxy_grant[@]}" \
-    --allow-unix-socket "$SSH_AUTH_SOCK" \
-    "${herdr_grant[@]}" \
-    --profile "$profile" -- claude --dangerously-skip-permissions "$@"
+  if [[ "${HERDR_ENV:-}" == 1 ]] && command -v herdr >/dev/null 2>&1; then
+    herdr agent start claude --cwd "$PWD" -- \
+      nono run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
+      --profile "$profile" -- claude --dangerously-skip-permissions "$@"
+  else
+    nono run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" \
+      --profile "$profile" -- claude --dangerously-skip-permissions "$@"
+  fi
 }
 
 nono-claude() { _nono-claude claude-code-hardened "$@" }
