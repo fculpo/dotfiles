@@ -28,6 +28,13 @@ shell-integration = zsh
 clipboard-read = allow
 clipboard-write = allow
 
+# Mouse scrolling
+# Default is `precision:1,discrete:3` — the mouse wheel (discrete) scrolls 3x
+# per notch, which feels jumpy vs the smooth trackpad (precision). Drop the
+# wheel to one line per notch; the multiplier applies to the scroll events
+# Ghostty reports to Zellij, so it fixes scrolling inside panes too.
+mouse-scroll-multiplier = discrete:1
+
 # Keybindings — clear all, re-add only macOS essentials
 # Everything else passes through to Zellij
 keybind = clear

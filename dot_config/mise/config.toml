@@ -29,7 +29,6 @@ crane = "0.13"
 # promoted from brew (CLI tools, dedupe with Homebrew)
 age = "latest"
 awscli = "latest"
-cocoapods = "latest"
 cosign = "latest"
 gitleaks = "latest"
 go-jsonnet = "latest"
@@ -44,6 +43,7 @@ shellcheck = "latest"
 syft = "latest"
 trivy = "latest"
 herdr = "latest"
+nono = "latest"
 
 [settings]
 
