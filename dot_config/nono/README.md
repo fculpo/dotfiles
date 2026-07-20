@@ -53,9 +53,10 @@ _nono-claude() {
   # herdr agent start uses herdr's own PATH (no mise), so pass nono's abs path.
   local nono_bin; nono_bin=$(command -v nono) || return 1
   if [[ "${HERDR_ENV:-}" == 1 ]] && command -v herdr >/dev/null 2>&1; then
-    local agent_name="claude-${PWD:t}-${RANDOM}"
-    herdr agent start "$agent_name" --cwd "$PWD" --split right \
-      --env HERDR_CLAUDE_LIFECYCLE=1 -- \
+    # claude-<dir>, suffixed -2/-3/... only on name collision (see zshrc for
+    # the retry loop; names must be unique and bare "claude" is reserved).
+    herdr agent start "claude-${${PWD:t}//[^A-Za-z0-9._-]/-}" --cwd "$PWD" \
+      --split right --env HERDR_CLAUDE_LIFECYCLE=1 -- \
       "$nono_bin" run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
       --profile "$profile" -- claude --dangerously-skip-permissions "$@"
   else
@@ -108,8 +109,9 @@ sees `nono` and never labels the pane as an agent. What does and doesn't work
 herdr, `HERDR_ENV=1`):
 
 ```bash
-herdr agent start "claude-${PWD:t}-${RANDOM}" --cwd "$PWD" --split right \
+herdr agent start "claude-${PWD:t}" --cwd "$PWD" --split right \
   --env HERDR_CLAUDE_LIFECYCLE=1 -- nono run … --profile <p> -- claude …
+# name suffixed -2/-3/... only when that exact name is already running
 ```
 
 - **Unique non-reserved name** per session: reports are accepted, and several

@@ -205,11 +205,26 @@ _nono-claude() {
   # interactive shell where mise is active).
   local nono_bin; nono_bin=$(command -v nono) || { print -u2 "nono-claude: nono not found in PATH"; return 1; }
   if [[ "${HERDR_ENV:-}" == 1 ]] && command -v herdr >/dev/null 2>&1; then
-    local agent_name="claude-${PWD:t}-${RANDOM}"
-    herdr agent start "$agent_name" --cwd "$PWD" --split right \
-      --env HERDR_CLAUDE_LIFECYCLE=1 -- \
-      "$nono_bin" run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
-      --profile "$profile" -- claude --dangerously-skip-permissions "$@"
+    # Deterministic name: claude-<dir>; only suffix -2/-3/... if that exact
+    # name is already running (herdr agent names must be unique, and the bare
+    # name "claude" is reserved -- reports would be silently dropped).
+    local base_name="claude-${${PWD:t}//[^A-Za-z0-9._-]/-}" agent_name out
+    local -i try=1
+    agent_name=$base_name
+    while :; do
+      if out=$(herdr agent start "$agent_name" --cwd "$PWD" --split right \
+          --env HERDR_CLAUDE_LIFECYCLE=1 -- \
+          "$nono_bin" run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
+          --profile "$profile" -- claude --dangerously-skip-permissions "$@" 2>&1); then
+        return 0
+      fi
+      if [[ "$out" == *agent_name_taken* ]] && (( ++try <= 9 )); then
+        agent_name="${base_name}-${try}"
+      else
+        print -u2 -- "nono-claude: ${out}"
+        return 1
+      fi
+    done
   else
     "$nono_bin" run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" \
       --profile "$profile" -- claude --dangerously-skip-permissions "$@"
