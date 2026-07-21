@@ -35,6 +35,7 @@
     "allow": [
       "$HOME/.android",
       "$HOME/.bun",
+      "$HOME/.ansible",
       "$HOME/.cache",
       "$HOME/.cache/codebase-memory-mcp",
       "$HOME/.claude/hooks/",
