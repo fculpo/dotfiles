@@ -53,10 +53,10 @@
     path = ~/.gitconfig.local
 
 [credential "https://github.com"]
-    helper = !/usr/bin/gh auth git-credential
+    helper = !/usr/bin/env gh auth git-credential
 
 [credential "https://gist.github.com"]
-    helper = !/usr/bin/gh auth git-credential
+    helper = !/usr/bin/env gh auth git-credential
 
 [credential "https://gitlab.com"]
-    helper = !glab auth git-credential
+    helper = !/usr/bin/env glab auth git-credential
