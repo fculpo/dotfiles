@@ -1,0 +1,14 @@
+#!/bin/sh
+# tokensave: chain-repo-hook
+repo_hook="$(git rev-parse --git-common-dir 2>/dev/null)/hooks/post-checkout"
+if [ -x "$repo_hook" ] && [ "$repo_hook" != "$0" ]; then
+	"$repo_hook" "$@"
+fi
+
+# tokensave: auto-init
+if [ "$1" = "0000000000000000000000000000000000000000" ]; then
+	"$HOME/.local/bin/tokensave" init >/dev/null 2>&1 &
+elif [ "$3" = "1" ]; then
+	"$HOME/.local/bin/tokensave" branch add >/dev/null 2>&1 &
+fi
+
