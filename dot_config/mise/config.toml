@@ -3,7 +3,7 @@
 "npm:@devcontainers/cli" = "latest"
 "npm:@google/gemini-cli" = "latest"
 "npm:@openai/codex" = "latest"
-"npm:openwiki" = "0.1.0"
+"npm:openwiki" = "latest"
 bat = "latest"
 bun = "latest"
 delta = "latest"

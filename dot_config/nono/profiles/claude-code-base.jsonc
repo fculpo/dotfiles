@@ -39,10 +39,12 @@
       "$HOME/.cache",
       "$HOME/.cache/codebase-memory-mcp",
       "$HOME/.claude/hooks/",
+      "$HOME/.codex",
       "$HOME/.cocoapods",
       "$HOME/.config",
       "$HOME/.dart-tool",
       "$HOME/.dartServer",
+      "$HOME/.dolt",
       "$HOME/.gitlab-ci-local",
       "$HOME/.gradle",
       "$HOME/.headroom/",
@@ -71,6 +73,7 @@
     ],
     "write": [],
     "allow_file": [
+      "$HOME/.zshrc",
       "$HOME/.claude.json"
     ],
     "read_file": [
@@ -86,7 +89,9 @@
     "deny": [
       ".envrc"
     ],
-    "bypass_protection": [],
+    "bypass_protection": [
+      "$HOME/.zshrc"
+    ],
     "suppress_save_prompt": [
       "~/"
     ]
@@ -137,7 +142,8 @@
     "allow_origins": [
       "https://api.supabase.com",
       "https://claude.com",
-      "https://claude.ai"
+      "https://claude.ai",
+      "https://github.com"
     ]
   },
   "allow_launch_services": null,
