@@ -33,6 +33,14 @@
   },
   "filesystem": {
     "allow": [
+      // The current project, read+write. $WORKDIR expands to the process cwd,
+      // so this replaces the --allow-cwd CLI flag: the grant is declared here
+      // instead of depending on how nono was invoked. Verified with
+      // `nono why --path <cwd>/f --op readwrite` -> ALLOWED, granted_path,
+      // Source profile; with --workdir pointed elsewhere the same path is DENIED.
+      // Still cd into a project first: from a parent dir this grants that whole
+      // tree (and $HOME is refused anyway -- it overlaps ~/.local/state/nono).
+      "$WORKDIR",
       "$HOME/.android",
       "$HOME/.bun",
       "$HOME/.ansible",
@@ -122,16 +130,35 @@
   "environment": {
     "set_vars": {
       "CLAUDE_CONFIG_DIR": "$HOME/.claude",
+      // Both of the next two exist only because ANTHROPIC_BASE_URL below points
+      // at headroom. Any custom base URL breaks them; headroom's own `wrap`
+      // papers over both (--tool-search, --1m), but we set the base URL here
+      // rather than via wrap, so we own the fixes.
+      //
+      // Without this, Claude Code stops deferring tool schemas behind a custom
+      // base URL and materializes all of them, inflating context by tens of K
+      // tokens -- cancelling much of what the proxy saves (headroom #746).
       "ENABLE_TOOL_SEARCH": "true",
+      // Claude Code only sends the context-1m beta header when the model id
+      // carries the [1m] suffix, and behind a custom base URL the /model picker
+      // selection does not survive -- so it silently caps at 200k
+      // (headroom #1158). The suffix is what triggers the header; the model name
+      // is just whichever one you want as default.
+      // Trade-off: this pins the default model, so update it when you move on
+      // from Opus 5.
+      "ANTHROPIC_MODEL": "claude-opus-5[1m]",
       "ANTHROPIC_BASE_URL": "http://localhost:8787"
     }
   },
   "credential_capture": {},
   "credential_providers": {},
   "credential_routes": [],
-  "workdir": {
-    "access": "none"
-  },
+  // Empty on purpose. workdir.access only sets the *level* used by the
+  // --allow-cwd flag, which we no longer pass; the cwd grant comes from
+  // "$WORKDIR" above. "access": "none" was misleading -- nono treats it as
+  // unset, so the built-in claude-code profile's ReadWrite still won
+  // (`nono profile show <name>` -> "Workdir access: ReadWrite").
+  "workdir": {},
   "hooks": {},
   "session_hooks": {},
   "rollback": {
