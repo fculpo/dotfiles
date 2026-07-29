@@ -182,16 +182,18 @@ export TG_PROVIDER_CACHE=1
 export CLAUDE_CONFIG_DIR="$HOME/.claude"
 
 # herdr reporting under nono. nono holds claude on an inner pty, so herdr's
-# process detection sees `nono` and never labels the pane (HERDR_AGENT is
-# Linux-only), so screen-manifest states are unreachable -- state is pushed
-# instead by ~/.claude/hooks/herdr-nono-lifecycle.sh via pane.report_agent over
-# $HERDR_SOCKET_PATH (hence the socket grant), against the CURRENT pane.
-# HERDR_CLAUDE_LIFECYCLE=1 gates that hook (and gates OFF the stock herdr
-# session hook, whose herdr:claude agent_session would switch the pane to
-# Claude's official integration policy and silently drop our reports --
-# verified herdr 0.7.4, 2026-07). Runs in this pane: when claude exits you are
-# back at your shell, and the hook's SessionEnd release returns the pane to
-# plain-shell display. See ~/.config/nono/README.md.
+# process detection sees `nono`, not `claude`. herdr 0.7.5 added macOS support
+# for the HERDR_AGENT hint for exactly this case (#679), so the claude screen
+# manifest runs and states come from screen detection -- verified 0.7.5,
+# 2026-07: agent=claude, screen_detection_skipped=false, with no hook and
+# without even granting the herdr socket.
+# The socket grant is for the stock herdr claude integration (session resume),
+# which is re-enabled by dropping HERDR_CLAUDE_LIFECYCLE: its settings.json gate
+# is `[ "$HERDR_CLAUDE_LIFECYCLE" = 1 ] || bash ... session`. That also makes
+# ~/.claude/hooks/herdr-nono-lifecycle.sh inert (it exits on the same gate), so
+# the hook and its 6 settings.json entries are now dead weight -- remove them
+# once this is confirmed. Runs in this pane: when claude exits you are back at
+# your shell. See ~/.config/nono/README.md.
 _nono-claude() {
   local profile=$1; shift
   local -a herdr_grant proxy_grant ssh_grant env_prefix
@@ -200,8 +202,9 @@ _nono-claude() {
   # Only the filtering profile runs the TLS-intercepting proxy; without it there is
   # no nono CA for gh/Go tools to trust.
   [[ $profile == claude-code-hardened ]] && proxy_grant=(--trust-proxy-ca)
-  [[ "${HERDR_ENV:-}" == 1 ]] && env_prefix=(HERDR_CLAUDE_LIFECYCLE=1)
-  env "${env_prefix[@]}" nono run --allow-cwd "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
+  [[ "${HERDR_ENV:-}" == 1 ]] && env_prefix=(HERDR_AGENT=claude)
+  # No --allow-cwd: the profile grants "$WORKDIR" (the cwd) read+write itself.
+  env "${env_prefix[@]}" nono run "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
     --profile "$profile" -- claude --dangerously-skip-permissions "$@"
 }
 
