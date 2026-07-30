@@ -66,6 +66,7 @@
       "$HOME/.npm",
       "$HOME/.pkl",
       "$HOME/.pub-cache",
+      "$HOME/.serena",
       "$HOME/.tokensave",
       "$HOME/Library/Developer/Xcode",
       "$HOME/.local/share/uv/tools",
