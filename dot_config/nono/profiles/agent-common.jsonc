@@ -1,0 +1,95 @@
+{
+  // Agent-agnostic sandbox grants, shared by claude-code-base and codex-base.
+  // Deliberately no "extends": this is a mixin. Both consumers list it as a
+  // second parent (e.g. "extends": ["codex", "agent-common"]) so the agent's own
+  // package profile stays the first base and this one only widens it.
+  //
+  // Deliberately no allow_domain either: any non-empty allow_domain turns on
+  // nono's default-deny proxy, which would silently filter the -open profiles
+  // that exist precisely to have no egress filter. Domain allowlists belong in
+  // the -hardened leaves only.
+  "meta": {
+    "name": "",
+    "version": "",
+    "description": "Shared agent-agnostic sandbox grants",
+    "author": null
+  },
+  "filesystem": {
+    "allow": [
+      // The current project, read+write. $WORKDIR expands to the process cwd,
+      // so this replaces the --allow-cwd CLI flag: the grant is declared here
+      // instead of depending on how nono was invoked. Verified with
+      // `nono why --path <cwd>/f --op readwrite` -> ALLOWED, granted_path,
+      // Source profile; with --workdir pointed elsewhere the same path is DENIED.
+      // Still cd into a project first: from a parent dir this grants that whole
+      // tree (and $HOME is refused anyway -- it overlaps ~/.local/state/nono).
+      "$WORKDIR",
+      "$HOME/.android",
+      "$HOME/.bun",
+      "$HOME/.ansible",
+      "$HOME/.cache",
+      "$HOME/.codex",
+      "$HOME/.config",
+      "$HOME/.dart-tool",
+      "$HOME/.dartServer",
+      "$HOME/.dolt",
+      "$HOME/.gitlab-ci-local",
+      "$HOME/.gradle",
+      "$HOME/.headroom/",
+      "$HOME/.local/share/chezmoi",
+      "$HOME/.local/share/mise",
+      "$HOME/.local/share/openspec",
+      "$HOME/.local/share/state",
+      "$HOME/.local/share/tokensave",
+      "$HOME/.local/state/mise/",
+      "$HOME/.nono-share",
+      "$HOME/.npm",
+      "$HOME/.pkl",
+      "$HOME/.pub-cache",
+      "$HOME/.serena",
+      "$HOME/.tokensave",
+      "$HOME/Library/Developer/Xcode",
+      "$HOME/.local/share/uv/tools",
+      "$HOME/workspace"
+    ],
+    "read": [
+      "$HOME/Downloads",
+      "$HOME/Library/Android",
+      "$HOME/.local/share/mise",
+      "$HOME/.config/gh",
+      "$HOME/.config/glab-cli",
+      "$HOME/.local/bin/graphify",
+      "~/.agents/skills"
+    ],
+    "allow_file": [
+      "$HOME/.zshrc"
+    ],
+    "read_file": [
+      "$HOME/.gitconfig.local"
+    ],
+    "deny": [
+      ".envrc"
+    ],
+    "bypass_protection": [
+      "$HOME/.zshrc"
+    ],
+    "suppress_save_prompt": [
+      "~/"
+    ]
+  },
+  "network": {
+    "open_port": [
+      9222,
+      5037,
+      8787 // headroom
+    ]
+  },
+  // Deliberately no open_urls here. Unlike filesystem.* and open_port, which
+  // append down the chain, open_urls is replace-on-presence: if any child
+  // provides the field at all, it overwrites the inherited value entirely
+  // (`nono profile guide`). A shared list here would be silently dropped by
+  // every consumer that declares its own. Each agent base therefore carries
+  // its own complete list, api.supabase.com and github.com included.
+  "allow_launch_services": true,
+  "allow_gpu": true
+}

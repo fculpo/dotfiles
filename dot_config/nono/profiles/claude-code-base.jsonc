@@ -1,5 +1,8 @@
 {
-  // Shared Claude Code sandbox: filesystem, ports, env. No egress filtering here.
+  // Shared Claude Code sandbox: Claude-specific paths and env only. The
+  // agent-agnostic grants (project dir, tool caches, ports) live in
+  // agent-common.jsonc, which codex-base extends too.
+  //
   // The two leaf profiles differ only in the network layer:
   //   claude-code-hardened -> adds network_profile + allow_domain (egress filter)
   //   claude-code-open     -> adds nothing (unrestricted egress)
@@ -8,7 +11,8 @@
   // allow_domain turns on the default-deny proxy. So "open" cannot be expressed as a
   // child of "hardened" -- it has to be a sibling that never inherits the filter.
   "extends": [
-    "claude-code"
+    "claude-code",
+    "agent-common"
   ],
   "meta": {
     "name": "",
@@ -16,118 +20,14 @@
     "description": "Shared Claude Code sandbox without egress filtering",
     "author": null
   },
-  "security": {
-    "signal_mode": null,
-    "process_info_mode": null,
-    "ipc_mode": null,
-    "capability_elevation": null,
-    "wsl2_proxy_policy": null
-  },
-  "groups": {
-    "include": [],
-    "exclude": []
-  },
-  "commands": {
-    "allow": [],
-    "deny": []
-  },
   "filesystem": {
     "allow": [
-      // The current project, read+write. $WORKDIR expands to the process cwd,
-      // so this replaces the --allow-cwd CLI flag: the grant is declared here
-      // instead of depending on how nono was invoked. Verified with
-      // `nono why --path <cwd>/f --op readwrite` -> ALLOWED, granted_path,
-      // Source profile; with --workdir pointed elsewhere the same path is DENIED.
-      // Still cd into a project first: from a parent dir this grants that whole
-      // tree (and $HOME is refused anyway -- it overlaps ~/.local/state/nono).
-      "$WORKDIR",
-      "$HOME/.android",
-      "$HOME/.bun",
-      "$HOME/.ansible",
-      "$HOME/.cache",
-      "$HOME/.cache/codebase-memory-mcp",
-      "$HOME/.claude/hooks/",
-      "$HOME/.codex",
-      "$HOME/.cocoapods",
-      "$HOME/.config",
-      "$HOME/.dart-tool",
-      "$HOME/.dartServer",
-      "$HOME/.dolt",
-      "$HOME/.gitlab-ci-local",
-      "$HOME/.gradle",
-      "$HOME/.headroom/",
-      "$HOME/.local/share/chezmoi",
-      "$HOME/.local/share/mise",
-      "$HOME/.local/share/openspec",
-      "$HOME/.local/share/state",
-      "$HOME/.local/share/tokensave",
-      "$HOME/.local/state/mise/",
-      "$HOME/.nono-share",
-      "$HOME/.npm",
-      "$HOME/.pkl",
-      "$HOME/.pub-cache",
-      "$HOME/.serena",
-      "$HOME/.tokensave",
-      "$HOME/Library/Developer/Xcode",
-      "$HOME/.local/share/uv/tools",
-      "$HOME/workspace"
+      "$HOME/.claude/hooks/"
     ],
-    "read": [
-      "$HOME/Downloads",
-      "$HOME/Library/Android",
-      "$HOME/.local/share/mise",
-      "$HOME/.config/gh",
-      "$HOME/.config/glab-cli",
-      "~/.agents/skills"
-    ],
-    "write": [],
     "allow_file": [
-      "$HOME/.zshrc",
       "$HOME/.claude.json"
-    ],
-    "read_file": [
-      "$HOME/.gitconfig.local"
-    ],
-    "write_file": [],
-    "unix_socket": [],
-    "unix_socket_bind": [],
-    "unix_socket_dir": [],
-    "unix_socket_dir_bind": [],
-    "unix_socket_subtree": [],
-    "unix_socket_subtree_bind": [],
-    "deny": [
-      ".envrc"
-    ],
-    "bypass_protection": [
-      "$HOME/.zshrc"
-    ],
-    "suppress_save_prompt": [
-      "~/"
     ]
   },
-  "network": {
-    "block": false,
-    "allow_http2": false,
-    "open_port": [
-      9222,
-      5037,
-      8787 // headroom
-    ],
-    "listen_port": [],
-    "connect_port": [],
-    "custom_credentials": {},
-    "tls_intercept": null,
-    "upstream_proxy": null,
-    "upstream_bypass": []
-  },
-  "diagnostics": {
-    "suppress_system_services": []
-  },
-  "linux": {
-    "af_unix_mediation": null,
-    "sandbox_policy": null
-  },
-  "env_credentials": {},
   "environment": {
     "set_vars": {
       "CLAUDE_CONFIG_DIR": "$HOME/.claude",
@@ -151,21 +51,16 @@
       "ANTHROPIC_BASE_URL": "http://localhost:8787"
     }
   },
-  "credential_capture": {},
-  "credential_providers": {},
-  "credential_routes": [],
   // Empty on purpose. workdir.access only sets the *level* used by the
   // --allow-cwd flag, which we no longer pass; the cwd grant comes from
-  // "$WORKDIR" above. "access": "none" was misleading -- nono treats it as
-  // unset, so the built-in claude-code profile's ReadWrite still won
+  // "$WORKDIR" in agent-common. "access": "none" was misleading -- nono treats
+  // it as unset, so the built-in claude-code profile's ReadWrite still won
   // (`nono profile show <name>` -> "Workdir access: ReadWrite").
   "workdir": {},
-  "hooks": {},
-  "session_hooks": {},
-  "rollback": {
-    "exclude_patterns": [],
-    "exclude_globs": []
-  },
+  // Unchanged from before the refactor, and it must stay that way. open_urls is
+  // replace-on-presence, not append: this block overwrites whatever the parents
+  // declare, so the shared origins have to be repeated here rather than
+  // inherited from agent-common.
   "open_urls": {
     "allow_origins": [
       "https://api.supabase.com",
@@ -173,14 +68,5 @@
       "https://claude.ai",
       "https://github.com"
     ]
-  },
-  "allow_launch_services": null,
-  "allow_gpu": null,
-  "allow_parent_of_protected": null,
-  "interactive": false,
-  "skipdirs": [],
-  "packs": [],
-  "binary": null,
-  "command_args": [],
-  "unsafe_macos_seatbelt_rules": []
+  }
 }

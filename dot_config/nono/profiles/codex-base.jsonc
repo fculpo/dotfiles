@@ -1,0 +1,33 @@
+{
+  // Shared Codex sandbox: Codex-specific env only. Filesystem, ports and the
+  // rest come from agent-common; $HOME/.codex and $HOME/.agents come from the
+  // builtin `codex` package profile, so they are not restated here.
+  //
+  // Same hardened/open split as Claude, forced by the same merge rule: any
+  // non-empty allow_domain turns on the default-deny proxy and children can
+  // never remove an inherited one, so "open" must be a sibling of "hardened".
+  "extends": [
+    "codex",
+    "agent-common"
+  ],
+  "meta": {
+    "name": "",
+    "version": "",
+    "description": "Shared Codex sandbox without egress filtering",
+    "author": null
+  },
+  // open_urls is replace-on-presence, not append (`nono profile guide`):
+  // declaring it here overwrites both the builtin codex profile's value and
+  // anything a parent set. So this list must restate everything Codex needs,
+  // including the builtin's auth.openai.com and allow_localhost, plus the
+  // shared origins that agent-common cannot carry for the same reason.
+  "open_urls": {
+    "allow_origins": [
+      "https://auth.openai.com",
+      "https://chatgpt.com",
+      "https://api.supabase.com",
+      "https://github.com"
+    ],
+    "allow_localhost": true
+  }
+}

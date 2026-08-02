@@ -1,0 +1,15 @@
+{
+  // codex-base with no egress filter: the proxy never starts, so Codex can reach
+  // any host. Filesystem confinement, policy groups and command policy are
+  // unchanged -- only network containment is dropped. Use for tasks that need
+  // arbitrary hosts (scraping, unknown registries); prefer codex-hardened.
+  "extends": [
+    "codex-base"
+  ],
+  "meta": {
+    "name": "",
+    "version": "",
+    "description": "Codex sandbox with unrestricted egress",
+    "author": null
+  }
+}
