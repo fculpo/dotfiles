@@ -205,7 +205,7 @@ _nono-claude() {
   [[ "${HERDR_ENV:-}" == 1 ]] && env_prefix=(HERDR_AGENT=claude)
   # No --allow-cwd: the profile grants "$WORKDIR" (the cwd) read+write itself.
   env "${env_prefix[@]}" nono run "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
-    --profile "$profile" -- claude --dangerously-skip-permissions "$@"
+    --profile "$profile" --allow-gpu --allow-launch-services -- claude --dangerously-skip-permissions --system-prompt="$(serena prompts print-cc-system-prompt-override)" "$@"
 }
 
 nono-claude() { _nono-claude claude-code-hardened "$@" }
@@ -214,6 +214,33 @@ nono-claude() { _nono-claude claude-code-hardened "$@" }
 # confinement still applies. Reach for this only when a task needs arbitrary
 # hosts -- egress filtering is the real containment (see ~/.config/nono/README.md).
 nono-claude-open() { _nono-claude claude-code-open "$@" }
+
+# Codex under nono. Mirrors _nono-claude: nono is the only sandbox boundary, so
+# Codex's own seatbelt is disabled -- nesting it inside nono produces
+# `sandbox-exec: sandbox_apply: Operation not permitted`, which is exactly the
+# failure the nono codex pack's developer instructions describe.
+# No --system-prompt equivalent exists for Codex; it reads ~/.codex/AGENTS.md.
+_nono-codex() {
+  local profile=$1; shift
+  local -a herdr_grant proxy_grant ssh_grant env_prefix
+  [[ -n "$HERDR_SOCKET_PATH" ]] && herdr_grant=(--allow-unix-socket "$HERDR_SOCKET_PATH")
+  [[ -n "$SSH_AUTH_SOCK" ]] && ssh_grant=(--allow-unix-socket "$SSH_AUTH_SOCK")
+  # Only the filtering profile runs the TLS-intercepting proxy; without it there is
+  # no nono CA for gh/Go tools to trust.
+  [[ $profile == codex-hardened ]] && proxy_grant=(--trust-proxy-ca)
+  [[ "${HERDR_ENV:-}" == 1 ]] && env_prefix=(HERDR_AGENT=codex)
+  # No --allow-cwd: the profile grants "$WORKDIR" (the cwd) read+write itself.
+  env "${env_prefix[@]}" nono run "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
+    --profile "$profile" --allow-gpu --allow-launch-services \
+    -- codex --dangerously-bypass-approvals-and-sandbox "$@"
+}
+
+nono-codex() { _nono-codex codex-hardened "$@" }
+
+# Same sandbox, no egress filter: Codex can reach any host. Filesystem
+# confinement still applies. Reach for this only when a task needs arbitrary
+# hosts -- egress filtering is the real containment (see ~/.config/nono/README.md).
+nono-codex-open() { _nono-codex codex-open "$@" }
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

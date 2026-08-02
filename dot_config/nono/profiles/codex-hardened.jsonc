@@ -1,0 +1,23 @@
+{
+  // Default Codex profile: codex-base + egress filtering.
+  // network_profile is the real containment (see ../README.md); allow_domain widens
+  // the proxy allowlist for hosts the codex network policy does not cover.
+  "extends": [
+    "codex-base"
+  ],
+  "meta": {
+    "name": "",
+    "version": "",
+    "description": "Codex sandbox with egress filtering",
+    "author": null
+  },
+  "network": {
+    "network_profile": "codex",
+    "allow_domain": [
+      "api.supabase.com",
+      "mcp.supabase.com",
+      "registry.nono.sh",
+      "nono.sh"
+    ]
+  }
+}
