@@ -14,6 +14,9 @@
     "description": "Shared agent-agnostic sandbox grants",
     "author": null
   },
+  "security": {
+    "ipc_mode": "full"
+  },
   "filesystem": {
     "allow": [
       // The current project, read+write. $WORKDIR expands to the process cwd,
