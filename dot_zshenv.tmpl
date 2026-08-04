@@ -9,6 +9,17 @@ skip_global_compinit=1
 if [[ -z "$SSH_AUTH_SOCK" && "$OSTYPE" == darwin* ]]; then
     export SSH_AUTH_SOCK=$(launchctl getenv SSH_AUTH_SOCK)
 fi
+{{ else if eq .chezmoi.os "linux" -}}
+# Single ssh-agent per user, at a fixed socket path so every shell finds it
+if [[ -z "$SSH_AUTH_SOCK" ]]; then
+    export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR:-/tmp}/ssh-agent.$UID.sock"
+    ssh-add -l >/dev/null 2>&1
+    # exit 2 = cannot connect to agent (stale or missing socket)
+    if [[ $? -eq 2 ]]; then
+        rm -f "$SSH_AUTH_SOCK"
+        ssh-agent -a "$SSH_AUTH_SOCK" >/dev/null 2>&1
+    fi
+fi
 {{ end }}
 
 alias assume=". assume"
