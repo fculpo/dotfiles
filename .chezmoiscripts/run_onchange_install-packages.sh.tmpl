@@ -2,20 +2,22 @@
 
 #!/usr/bin/env bash
 
-{{ if eq .osid "linux-debian" -}}
+{{ if has .osid (list "linux-debian" "linux-ubuntu") -}}
 sudo apt update -y
 sudo apt install --no-install-recommends -y curl git git-lfs vim gpg zsh
 
-# Install mise - https://mise.jdx.dev/installing-mise.html#apt
-sudo install -dm 755 /etc/apt/keyrings
-curl -fSs https://mise.jdx.dev/gpg-key.pub | sudo tee /etc/apt/keyrings/mise-archive-keyring.pub 1> /dev/null
-echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.pub arch=$CHEZMOI_ARCH] https://mise.jdx.dev/deb stable main" | sudo tee /etc/apt/sources.list.d/mise.list
-sudo apt update -y
-sudo apt install -y mise
+# Install mise - https://mise.jdx.dev/installing-mise.html
+# Not a chezmoi external: externals are materialized after .chezmoiscripts run,
+# so `mise install` below would not find the binary yet.
+curl -fsSL https://mise.run | sh
 
 {{ else if eq .osid "darwin" -}}
 
 {{ end -}}
+
+# mise.run installs to ~/.local/bin, which a non-interactive script does not
+# necessarily have on PATH.
+export PATH="$HOME/.local/bin:$PATH"
 
 mise trust
 mise install
