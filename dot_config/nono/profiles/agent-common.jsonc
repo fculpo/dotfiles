@@ -12,10 +12,10 @@
     "name": "",
     "version": "",
     "description": "Shared agent-agnostic sandbox grants",
-    "author": null
+    "author": null,
   },
   "security": {
-    "ipc_mode": "full"
+    "ipc_mode": "full",
   },
   "filesystem": {
     "allow": [
@@ -53,7 +53,7 @@
       "$HOME/.tokensave",
       "$HOME/Library/Developer/Xcode",
       "$HOME/.local/share/uv/tools",
-      "$HOME/workspace"
+      "$HOME/workspace",
     ],
     "read": [
       "$HOME/Downloads",
@@ -62,37 +62,23 @@
       "$HOME/.config/gh",
       "$HOME/.config/glab-cli",
       "$HOME/.local/bin/graphify",
-      "~/.agents/skills"
+      "~/.agents/skills",
     ],
-    "allow_file": [
-      "$HOME/.zshrc"
-    ],
-    "read_file": [
-      "$HOME/.gitconfig.local"
-    ],
-    "deny": [
-      ".envrc"
-    ],
-    "bypass_protection": [
-      "$HOME/.zshrc"
-    ],
-    "suppress_save_prompt": [
-      "~/"
-    ]
+    "allow_file": ["$HOME/.zshrc"],
+    "read_file": ["$HOME/.gitconfig.local"],
+    "deny": [".envrc"],
+    "bypass_protection": ["$HOME/.zshrc"],
+    "suppress_save_prompt": ["~/"],
   },
   "network": {
     "open_port": [
       9222,
       5037,
-      8787 // headroom
-    ]
+      8787, // headroom
+    ],
   },
-  // Deliberately no open_urls here. Unlike filesystem.* and open_port, which
-  // append down the chain, open_urls is replace-on-presence: if any child
-  // provides the field at all, it overwrites the inherited value entirely
-  // (`nono profile guide`). A shared list here would be silently dropped by
-  // every consumer that declares its own. Each agent base therefore carries
-  // its own complete list, api.supabase.com and github.com included.
-  "allow_launch_services": true,
-  "allow_gpu": true
+  "open_urls": {
+    "allow_origins": [],
+    "allow_localhost": true,
+  },
 }
