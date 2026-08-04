@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+# Runs after ~/.config/mise/config.toml is written -- a plain (before) script
+# would call `mise install` while the global tool list does not exist yet and
+# silently install nothing.
+#
+# Re-runs whenever the tool list changes:
+# config hash: {{ include "dot_config/mise/config.toml" | sha256sum }}
+
+set -eu
+
+# mise lives in ~/.local/bin, which a non-interactive script has no rc to add.
+export PATH="$HOME/.local/bin:$PATH"
+
+mise install
