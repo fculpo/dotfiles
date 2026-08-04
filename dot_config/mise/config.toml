@@ -46,6 +46,8 @@ herdr = "latest"
 nono = "latest"
 markdownlint-cli2 = "latest"
 "github:gastownhall/beads" = "latest"
+azure-kubelogin = "latest"
+azure-cli = { version = "latest", uvx_args = "--prerelease=allow" }
 
 [settings]
 
