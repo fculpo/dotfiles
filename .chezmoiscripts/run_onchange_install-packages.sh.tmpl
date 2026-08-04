@@ -4,7 +4,7 @@
 
 {{ if eq .osid "linux-debian" -}}
 sudo apt update -y
-sudo apt install --no-install-recommends -y curl git vim gpg zsh
+sudo apt install --no-install-recommends -y curl git git-lfs vim gpg zsh
 
 # Install mise - https://mise.jdx.dev/installing-mise.html#apt
 sudo install -dm 755 /etc/apt/keyrings
