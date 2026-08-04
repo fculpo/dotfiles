@@ -15,9 +15,5 @@ curl -fsSL https://mise.run | sh
 
 {{ end -}}
 
-# mise.run installs to ~/.local/bin, which a non-interactive script does not
-# necessarily have on PATH.
-export PATH="$HOME/.local/bin:$PATH"
-
-mise trust
-mise install
+# `mise install` runs from run_onchange_after_mise-install.sh, once the global
+# config.toml it reads has actually been written.
