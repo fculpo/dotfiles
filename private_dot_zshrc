@@ -205,7 +205,7 @@ _nono-claude() {
   [[ "${HERDR_ENV:-}" == 1 ]] && env_prefix=(HERDR_AGENT=claude)
   # No --allow-cwd: the profile grants "$WORKDIR" (the cwd) read+write itself.
   env "${env_prefix[@]}" nono run "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
-    --profile "$profile" --allow-gpu --allow-launch-services -- claude --dangerously-skip-permissions --system-prompt="$(serena prompts print-cc-system-prompt-override)" "$@"
+    --profile "$profile" -- claude --dangerously-skip-permissions "$@"
 }
 
 nono-claude() { _nono-claude claude-code-hardened "$@" }
@@ -231,8 +231,7 @@ _nono-codex() {
   [[ "${HERDR_ENV:-}" == 1 ]] && env_prefix=(HERDR_AGENT=codex)
   # No --allow-cwd: the profile grants "$WORKDIR" (the cwd) read+write itself.
   env "${env_prefix[@]}" nono run "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
-    --profile "$profile" --allow-gpu --allow-launch-services \
-    -- codex --dangerously-bypass-approvals-and-sandbox "$@"
+    --profile "$profile" -- codex --dangerously-bypass-approvals-and-sandbox "$@"
 }
 
 nono-codex() { _nono-codex codex-hardened "$@" }
