@@ -36,6 +36,7 @@
       "$HOME/.dart-tool",
       "$HOME/.dartServer",
       "$HOME/.dolt",
+      "$HOME/esp/esp-idf",
       "$HOME/.gitlab-ci-local",
       "$HOME/.gradle",
       "$HOME/.headroom/",
