@@ -50,6 +50,7 @@
       "$HOME/.npm",
       "$HOME/.pkl",
       "$HOME/.pub-cache",
+      "$HOME/.rustup",
       "$HOME/.serena",
       "$HOME/.tokensave",
       "$HOME/Library/Developer/Xcode",
