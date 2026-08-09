@@ -31,6 +31,7 @@
       "$HOME/.bun",
       "$HOME/.ansible",
       "$HOME/.cache",
+      "$HOME/.cargo",
       "$HOME/.codex",
       "$HOME/.config",
       "$HOME/.dart-tool",
