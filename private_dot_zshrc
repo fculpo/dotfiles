@@ -194,6 +194,12 @@ export CLAUDE_CONFIG_DIR="$HOME/.claude"
 # the hook and its 6 settings.json entries are now dead weight -- remove them
 # once this is confirmed. Runs in this pane: when claude exits you are back at
 # your shell. See ~/.config/nono/README.md.
+# Claude Code's built-in tool descriptions bias it hard toward Read/Grep/Bash over
+# Serena's symbol tools. Serena's own fix replaces the system prompt wholesale
+# (`serena prompts print-cc-system-prompt-override`), which drags in its opinions on
+# commits, tone and scope; this appends only the tool-selection half.
+claude() { command claude --append-system-prompt-file ~/.claude/serena-tool-selection.md "$@" }
+
 _nono-claude() {
   local profile=$1; shift
   local -a herdr_grant proxy_grant ssh_grant env_prefix
@@ -205,7 +211,8 @@ _nono-claude() {
   [[ "${HERDR_ENV:-}" == 1 ]] && env_prefix=(HERDR_AGENT=claude)
   # No --allow-cwd: the profile grants "$WORKDIR" (the cwd) read+write itself.
   env "${env_prefix[@]}" nono run "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
-    --profile "$profile" -- claude --dangerously-skip-permissions "$@"
+    --profile "$profile" -- claude --dangerously-skip-permissions \
+    --append-system-prompt-file ~/.claude/serena-tool-selection.md "$@"
 }
 
 nono-claude() { _nono-claude claude-code-hardened "$@" }
