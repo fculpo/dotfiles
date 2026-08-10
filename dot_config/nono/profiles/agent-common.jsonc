@@ -39,6 +39,7 @@
       "$HOME/.dolt",
       "$HOME/esp/esp-idf",
       "$HOME/.gitlab-ci-local",
+      "$HOME/go/pkg",
       "$HOME/.gradle",
       "$HOME/.headroom/",
       "$HOME/.local/share/chezmoi",
