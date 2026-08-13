@@ -48,8 +48,13 @@ markdownlint-cli2 = "latest"
 "github:gastownhall/beads" = "latest"
 azure-kubelogin = "latest"
 azure-cli = { version = "latest", uvx_args = "--prerelease=allow" }
+postgres = "latest"
+kubectl = "1.35"
+rclone = "latest"
+rust = "latest"
 
 [settings]
+idiomatic_version_file_enable_tools = ["rust"]
 
 [settings.npm]
 package_manager = "bun"
