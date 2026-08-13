@@ -19,7 +19,7 @@ macos-titlebar-style = hidden
 # `attach --create main` attaches if "main" is running, resurrects it (restoring
 # tabs/panes/layout) if it EXITED, or creates it if it doesn't exist yet. Using a
 # fixed name avoids the random-named session pile-up that bare `--create` caused.
-command = /opt/homebrew/bin/zellij attach --create main
+command = $HOME/.local/bin/zellij attach --create main
 
 # Shell integration (works inside Zellij-spawned shells)
 shell-integration = zsh
