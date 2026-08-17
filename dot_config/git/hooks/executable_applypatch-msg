@@ -1,6 +1,0 @@
-#!/bin/sh
-# tokensave: chain-repo-hook
-repo_hook="$(git rev-parse --git-common-dir 2>/dev/null)/hooks/applypatch-msg"
-if [ -x "$repo_hook" ] && [ "$repo_hook" != "$0" ]; then
-	"$repo_hook" "$@"
-fi
