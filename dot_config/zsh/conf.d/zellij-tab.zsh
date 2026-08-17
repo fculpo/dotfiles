@@ -55,13 +55,37 @@ _zellij_tab_cmd() {
     print -r -- "${cmd}${arg:+ ${arg:t}}"
 }
 
+# Name of the focused tab, empty when it has never been named.
+_zellij_tab_current() {
+    setopt localoptions extendedglob
+    local l
+    for l in ${(f)"$(command zellij action dump-layout 2>/dev/null)"}; do
+        [[ $l == [[:space:]]#tab[[:space:]]* && $l == *focus=true* ]] || continue
+        [[ $l == (#b)*name=\"([^\"]#)\"* ]] && print -r -- $match[1]
+        return
+    done
+}
+
 # Synchronous on purpose: backgrounding the rename lets a fast command's preexec and
 # precmd calls land out of order and leave the tab stuck on the command name.
 _zellij_tab_set() {
+    setopt localoptions extendedglob
     local name=$1
     [[ -n $name ]] || return
+    (( _zellij_tab_manual )) && return
     (( ${#name} > 30 )) && name="${name[1,29]}…"
     [[ $name == $_zellij_tab_last ]] && return
+
+    # Hands off any tab this shell doesn't own: one someone renamed by hand (or in a
+    # layout), or one already driven by a second shell in the same tab. Costs a
+    # dump-layout, but only when the name is about to change anyway.
+    local current=$(_zellij_tab_current)
+    if [[ -n $_zellij_tab_last ]]; then
+        [[ $current == $_zellij_tab_last ]] || { _zellij_tab_manual=1; return }
+    else
+        [[ -z $current || $current == 'Tab #'<-> ]] || { _zellij_tab_manual=1; return }
+    fi
+
     _zellij_tab_last=$name
     command zellij action rename-tab "$name" &>/dev/null
 }
