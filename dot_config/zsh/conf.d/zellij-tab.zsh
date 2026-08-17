@@ -72,18 +72,22 @@ _zellij_tab_set() {
     setopt localoptions extendedglob
     local name=$1
     [[ -n $name ]] || return
-    (( _zellij_tab_manual )) && return
     (( ${#name} > 30 )) && name="${name[1,29]}…"
     [[ $name == $_zellij_tab_last ]] && return
 
     # Hands off any tab this shell doesn't own: one someone renamed by hand (or in a
     # layout), or one already driven by a second shell in the same tab. Costs a
     # dump-layout, but only when the name is about to change anyway.
+    #
+    # Re-checked every time rather than latched: dump-layout and rename-tab both act on
+    # the *focused* tab, so a shell whose tab is in the background reads a foreign name.
+    # Latching that would strand the tab on the command name after any command you
+    # switched away from. ponytail: costs a dump-layout per prompt in a hand-named tab.
     local current=$(_zellij_tab_current)
     if [[ -n $_zellij_tab_last ]]; then
-        [[ $current == $_zellij_tab_last ]] || { _zellij_tab_manual=1; return }
+        [[ $current == $_zellij_tab_last ]] || return
     else
-        [[ -z $current || $current == 'Tab #'<-> ]] || { _zellij_tab_manual=1; return }
+        [[ -z $current || $current == 'Tab #'<-> ]] || return
     fi
 
     _zellij_tab_last=$name
