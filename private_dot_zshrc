@@ -252,6 +252,8 @@ nono-codex() { _nono-codex codex-hardened "$@" }
 # hosts -- egress filtering is the real containment (see ~/.config/nono/README.md).
 nono-codex-open() { _nono-codex codex-open "$@" }
 
+[[ -x ~/.zsh-patina/target/release/zsh-patina ]] && eval "$(~/.zsh-patina/target/release/zsh-patina activate)"
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
