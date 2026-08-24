@@ -1,3 +1,5 @@
+alias P='pbcopy'
+
 alias crypto='curl rate.sx' # Get crypto prices
 
 alias path='echo -e ${PATH//:/\\n}'
