@@ -39,8 +39,8 @@ setopt CORRECT
 # Customize spelling correction prompt.
 SPROMPT='zsh: correct %F{red}%R%f to %F{green}%r%f [nyae]? '
 
-# Remove / and - from WORDCHARS.
-WORDCHARS=${WORDCHARS//[\/-]/}
+# Remove / from WORDCHARS (keep - so ctrl-w eats hyphenated words).
+WORDCHARS=${WORDCHARS//\//}
 
 # Disable automatic widget re-binding on each precmd.
 ZSH_AUTOSUGGEST_MANUAL_REBIND=1
