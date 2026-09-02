@@ -25,7 +25,6 @@ import sys
 
 path = sys.argv[1]
 wanted = [
-    ("PreToolUse", "", "serena-hooks remind --client=claude-code"),
     ("PreToolUse", "mcp__serena__*", "serena-hooks auto-approve --client=claude-code"),
     ("PreToolUse", "Bash", "python3 %s/hooks/serena-prefer-symbols.py" % os.path.dirname(path)),
     ("SessionStart", "*", "serena-hooks activate --client=claude-code"),
