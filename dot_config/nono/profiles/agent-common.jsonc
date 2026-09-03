@@ -41,6 +41,7 @@
       "$HOME/.gitlab-ci-local",
       "$HOME/go/pkg",
       "$HOME/.gradle",
+      "$HOME/.gsd/",
       "$HOME/.headroom/",
       "$HOME/.local/share/chezmoi",
       "$HOME/.local/share/mise",
