@@ -71,7 +71,7 @@
     ],
     "allow_file": ["$HOME/.zshrc"],
     "read_file": ["$HOME/.gitconfig.local"],
-    "deny": [".envrc"],
+    "deny": ["**/.envrc", "**/.envrc.*", "**/.env", "**/.env.*", "**/.secrets"],
     "bypass_protection": ["$HOME/.zshrc"],
     "suppress_save_prompt": ["~/"],
   },
