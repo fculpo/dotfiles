@@ -47,7 +47,7 @@
       // is just whichever one you want as default.
       // Trade-off: this pins the default model, so update it when you move on
       // from Opus 5.
-      "ANTHROPIC_MODEL": "claude-opus-5[1m]",
+      "ANTHROPIC_MODEL": "claude-fable-5-1[1m]",
       "ANTHROPIC_BASE_URL": "http://localhost:8787"
     }
   },
