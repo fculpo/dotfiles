@@ -312,7 +312,11 @@ auto_layout true
 copy_on_select true
 default_layout "main"
 default_mode "normal"
+{{ if eq .chezmoi.os "darwin" -}}
+default_shell "/opt/homebrew/bin/zsh"
+{{- else -}}
 default_shell "zsh"
+{{- end }}
 disable_session_metadata false
 focus_follows_mouse true
 mouse_click_through false
