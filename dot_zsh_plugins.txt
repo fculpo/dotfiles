@@ -28,7 +28,6 @@ fzf
 gcloud
 gh
 gnu-utils
-gpg-agent
 helm
 kubectl
 magic-enter
