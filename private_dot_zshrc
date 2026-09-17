@@ -102,6 +102,10 @@ setopt NO_LIST_BEEP # No beep on completion list
 zstyle ':zephyr:plugin:completion' 'compstyle' 'zephyr'
 zstyle ':zephyr:plugin:completion' 'use-cache' 'yes'
 
+# Cache `brew shellenv` (zephyr's cached-eval, 20h TTL). Output is a fixed
+# prefix; running it fresh cost ~130ms per shell.
+zstyle ':zephyr:plugin:homebrew' 'use-cache' 'yes'
+
 # zstyle ':completion:::::' completer _extensions _complete _approximate
 
 # Complete the alias when _expand_alias is used as a function
@@ -150,6 +154,41 @@ fi
 source ${zsh_plugins}.zsh
 
 # END Antidote setup
+
+# gpg-agent: point the agent's pinentry at the current tty. Replaces the ohmyzsh
+# gpg-agent plugin, which spent ~450ms per shell on `gpgconf --list-options
+# gpg-agent` just to read enable-ssh-support -- off here, and ssh goes through
+# launchd's agent anyway. If that ever changes, `gpgconf --list-dirs
+# agent-ssh-socket` answers the same question in 10ms.
+export GPG_TTY=$TTY
+_gpg-agent_update-tty_preexec() { gpg-connect-agent updatestartuptty /bye &>/dev/null }
+autoload -Uz add-zsh-hook && add-zsh-hook preexec _gpg-agent_update-tty_preexec
+
+# ohmyzsh's tool plugins (gh, uv, kubectl, helm, mise, chezmoi, fluxcd) rewrite
+# $ZSH_CACHE_DIR/completions/_* on every startup, by design -- a tool upgrade can
+# change its own completions. That dir is on $fpath, and zephyr's run_compinit drops
+# its 20h dump cache whenever an $fpath dir is newer than the dump, so the cache never
+# held: every prompt paid a full compinit+compaudit+compdump (~800ms, the dump got a
+# new inode every shell). Re-stamping the dump can't fix it -- each shell's own writes
+# land before its precmd. So keep the churn dir off $fpath and stage it into a stable
+# dir that only changes when a completion's content actually changes; a real tool
+# upgrade then invalidates the dump exactly once.
+() {
+    local churn=${ZSH_CACHE_DIR:-$HOME/.cache/zsh}/completions
+    local stable=${XDG_CONFIG_HOME:-$HOME/.config}/zsh/completions
+    [[ -d $stable ]] || mkdir -p $stable
+    fpath=($stable ${fpath:#($churn|$stable)})
+    # The plugins write via `zf_mv -f -- =( cmd ) $churn/_tool`, so the dir also
+    # holds zsh's transient =() temp files (_tool + random suffix). Staging one
+    # would leave dead weight on $fpath and re-bump $stable, so only take files
+    # named after a command that exists. The final _tool name lands by rename,
+    # which is atomic, so it is never seen half-written.
+    local f
+    for f in $churn/_*(N.); do
+        (( $+commands[${${f:t}#_}] )) || continue
+        cmp -s $f $stable/$f:t || cp -f $f $stable/$f:t
+    done
+}
 
 # Re-apply PATH_DIRS=off as zephyr's completion plugin sets `path_dirs`.
 # security behavior of not searching $PATH for slashed command names.
