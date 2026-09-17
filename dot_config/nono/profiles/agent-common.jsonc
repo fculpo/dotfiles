@@ -44,7 +44,7 @@
       "$HOME/.headroom/",
       "$HOME/.local/bin",
       "$HOME/.local/share/chezmoi",
-      "$HOME/.local/share/helm/plugins",
+      "$HOME/.local/share/helm",
       "$HOME/.local/share/mise",
       "$HOME/.local/share/openspec",
       "$HOME/.local/share/state",
