@@ -25,7 +25,6 @@ yazi = "latest"
 tanka = "latest"
 yq = "latest"
 eza = "latest"
-crane = "0.13"
 # promoted from brew (CLI tools, dedupe with Homebrew)
 age = "latest"
 awscli = "latest"
