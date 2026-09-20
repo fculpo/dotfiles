@@ -223,6 +223,12 @@ autoload -Uz promptinit && promptinit && prompt powerlevel10k
 
 export TG_PROVIDER_CACHE=1
 export CLAUDE_CONFIG_DIR="$HOME/.claude"
+# Pin claude's credential store to the default (unsuffixed) keychain item:
+# CLAUDE_CONFIG_DIR above is hashed into the service name, but cswap only writes
+# the unsuffixed one, so rotation would never reach these sessions. Empty value is
+# intentional (claude's "default store" signal). Drop this if you ever use
+# `cswap run` session mode -- it does not scrub the var, so profiles would share one store.
+export CLAUDE_SECURESTORAGE_CONFIG_DIR=""
 
 # herdr reporting under nono. nono holds claude on an inner pty, so herdr's
 # process detection sees `nono`, not `claude`. herdr 0.7.5 added macOS support

@@ -31,6 +31,14 @@
   "environment": {
     "set_vars": {
       "CLAUDE_CONFIG_DIR": "$HOME/.claude",
+      // Pins claude's SECURE STORE to the default (unsuffixed) keychain item.
+      // CLAUDE_CONFIG_DIR above is hashed into the keychain service name
+      // (`Claude Code-credentials-<sha256(dir)[:8]>`), but cswap only ever writes
+      // the unsuffixed `Claude Code-credentials` -- so auto rotation landed in a
+      // store no sandboxed session reads. Defined-but-empty is claude's own
+      // "use the default store" signal (2.1.278 `qS`/`bO`), and it moves ONLY the
+      // credential lookup: .claude.json stays at $HOME/.claude/.claude.json.
+      "CLAUDE_SECURESTORAGE_CONFIG_DIR": "",
       // Both of the next two exist only because ANTHROPIC_BASE_URL below points
       // at headroom. Any custom base URL breaks them; headroom's own `wrap`
       // papers over both (--tool-search, --1m), but we set the base URL here
