@@ -99,51 +99,42 @@ screen manifest (fetched into `~/.local/state/herdr/agent-detection/remote/`).
 Under nono the OSC title reads `⠐ nono` rather than `✳ Claude Code`, but the
 braille-spinner prefix is what `osc_title_working` matches.
 
-Because `HERDR_CLAUDE_LIFECYCLE` is no longer set, the stock herdr claude
-integration is un-gated again, so **session resume works** — the thing the old
-workaround gave up.
+The stock claude integration (`~/.claude/hooks/herdr-agent-state.sh`, v10 as of
+herdr 0.9.3) reports the session id, so `herdr agent list` shows it. The 0.7.4
+pushed-state workaround (`herdr-nono-lifecycle.sh`, `HERDR_CLAUDE_LIFECYCLE`)
+was removed on 2026-09-30; it lives in git history.
 
-`~/.claude/hooks/herdr-nono-lifecycle.sh` and its 6 `settings.json` entries are
-now inert (the hook exits on the same missing gate). Remove them once this is
-confirmed in daily use.
+### The herdr socket is a sandbox escape (accepted)
 
-<details>
-<summary>Historical: the 0.7.4 workaround (pushed state)</summary>
+`--allow-unix-socket "$HERDR_SOCKET_PATH"` is not read-only. The herdr API can
+`pane split` + `pane run`, and the new pane's shell is spawned by the herdr
+server **outside nono**, so any sandboxed agent can run host commands through
+herdr. Accepted deliberately (2026-09-30): the socket carries session identity
+and the herdr skill (agents watching and prompting other sessions), and
+`--dangerously-skip-permissions` + egress filtering already set the trust
+model. To close it, drop `herdr_grant` from `_nono-claude` / `_nono-codex`;
+detection still works through `HERDR_AGENT`. Upstream tracks per-caller socket
+authorization as an idea (herdrdev/herdr discussion #514); nothing has shipped.
 
-On 0.7.4 the screen manifest could not run at all — it needed a process-detected
-label, and `HERDR_AGENT` was Linux-only. So state was **pushed** instead:
+### Herdr launches go through nono
 
-- **`~/.claude/hooks/herdr-nono-lifecycle.sh`** (chezmoi-managed) reports
-  `idle`/`working`/`blocked` for the **current pane** via `pane.report_agent`
-  over `$HERDR_SOCKET_PATH` (hence the socket grant), gated on
-  `HERDR_CLAUDE_LIFECYCLE=1` (set by the launcher only inside herdr). Six
-  `settings.json` events: SessionStart/UserPromptSubmit/Stop/SessionEnd/
-  Notification + PostToolUse `AskUserQuestion|ExitPlanMode`. It sends the
-  session id/transcript inside the report, uses `seq = time_ns` (herdr ignores
-  non-increasing seq per source), and on SessionEnd sends `pane.release_agent`
-  so the pane returns to plain-shell display when claude exits. Spurious
-  SessionEnds (`/clear`, nested `claude -p`) just flicker and self-correct on
-  the next event.
-- **The stock claude session hook** (`herdr-agent-state.sh`) is **gated OFF
-  under nono** in `settings.json`
-  (`[ "${HERDR_CLAUDE_LIFECYCLE:-}" = 1 ] || bash ... session`): once its
-  `herdr:claude` `agent_session` touches a pane, herdr switches the pane to
-  Claude's official integration policy and **silently drops `report_agent`
-  from every other source** (states freeze). Trade-off: no official
-  session-resume under nono.
-- **Do not use `herdr agent start` for this**: its pane dies with the process,
-  its child PATH lacks mise, names must be unique, and it adds nothing --
-  plain panes accept `pane.report_agent` fine as long as no `herdr:claude`
-  session is attached.
-
-</details>
+Herdr's native restore (`claude --resume <id>`) and `herdr agent start --kind
+claude` both type a bare `claude` into the pane's interactive zsh. The `claude`
+function in `~/.zshrc` routes that to `$HERDR_CLAUDE_LAUNCHER` (per machine, in
+`~/.zsh.d`; default `nono-claude-open`)
+whenever `HERDR_ENV=1` and the shell is not already sandboxed (`NONO_CAP_FILE`
+unset), so restored and started agents come back sandboxed. Verified
+2026-09-30: `agent start` and a typed `claude --resume <id>` both ran
+`nono run --profile <launcher's profile> -- claude --dangerously-skip-permissions`.
+`command claude` bypasses it. `herdr-dispatch` (`~/.local/bin`) wraps the
+same flow with naming, placement and a choice of launcher.
 
 Debugging: `herdr agent explain <pane> --json`, `herdr pane get <pane>`,
 `herdr pane process-info --pane <pane>`. Get a pane id from `herdr agent list`
 (its output is already JSON) filtered by `cwd`. Beware: `pane.report_agent`
-returns `{"type":"ok"}` even when a report is silently dropped — 0.7.5 adds
-`pane.clear_agent_authority` ("release Herdr's full-lifecycle authority") to
-unstick a pane an `agent_session` has taken over.
+returns `{"type":"ok"}` even when a report is silently dropped (verify with
+`herdr pane get`); `pane.clear_agent_authority` unsticks a pane whose
+`agent_session` holds lifecycle authority.
 
 ## Per-workflow
 

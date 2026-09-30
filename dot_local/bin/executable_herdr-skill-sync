@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#
+# herdr-skill-sync - regenerate the herdr agent skill from the installed binary.
+#
+# Runs as the herdr postinstall hook in ~/.config/mise/config.toml, so SKILL.md
+# documents the CLI of the binary actually installed (the GitHub copy can be
+# ahead of it). The stock description only triggers when Herdr is named; this
+# widens it to references to other sessions. Local conventions live beside it
+# in local.md (chezmoi-managed) and survive regeneration. ~/.claude/skills/herdr
+# is a symlink to the same directory, so Claude and Codex share it.
+
+set -euo pipefail
+
+dir="$HOME/.agents/skills/herdr"
+desc='Control Herdr, the terminal multiplexer these agent sessions run in. Use when the user mentions Herdr, or refers to another Claude or Codex session, agent, pane, tab or workspace: to see what it is doing, read its output, wait for it, prompt it, or start a new session in a pane, tab, workspace or worktree. Not for ordinary delegation or parallel work; use subagents for that. Requires HERDR_ENV=1.'
+note='> Before acting, read [local.md](local.md) in this directory: this machine'"'"'s conventions. They override the defaults below where they differ.'
+
+mkdir -p "$dir"
+tmp=$(mktemp "$dir/.SKILL.md.XXXXXX")
+trap 'rm -f "$tmp"' EXIT
+
+# Fails (keeping the previous SKILL.md) if the frontmatter no longer has the
+# expected shape, rather than shipping a skill with the stock trigger.
+herdr --skill | awk -v desc="$desc" -v note="$note" '
+  /^---$/ && fm < 2 { fm++; print; if (fm == 2) { print ""; print note }; next }
+  fm == 1 && /^description:/ { print "description: \"" desc "\""; seen = 1; next }
+  { print }
+  END { if (!seen || fm < 2) exit 1 }
+' >"$tmp" || { echo "herdr-skill-sync: unexpected 'herdr --skill' output" >&2; exit 1; }
+
+chmod 0644 "$tmp"
+mv "$tmp" "$dir/SKILL.md"
+echo "herdr-skill-sync: wrote $dir/SKILL.md ($(herdr --version))"

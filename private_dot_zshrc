@@ -232,25 +232,32 @@ export CLAUDE_CONFIG_DIR="$HOME/.claude"
 # `cswap run` session mode -- it does not scrub the var, so profiles would share one store.
 export CLAUDE_SECURESTORAGE_CONFIG_DIR=""
 
-# herdr reporting under nono. nono holds claude on an inner pty, so herdr's
-# process detection sees `nono`, not `claude`. herdr 0.7.5 added macOS support
-# for the HERDR_AGENT hint for exactly this case (#679), so the claude screen
-# manifest runs and states come from screen detection -- verified 0.7.5,
-# 2026-07: agent=claude, screen_detection_skipped=false, with no hook and
-# without even granting the herdr socket.
-# The socket grant is for the stock herdr claude integration (session resume),
-# which is re-enabled by dropping HERDR_CLAUDE_LIFECYCLE: its settings.json gate
-# is `[ "$HERDR_CLAUDE_LIFECYCLE" = 1 ] || bash ... session`. That also makes
-# ~/.claude/hooks/herdr-nono-lifecycle.sh inert (it exits on the same gate), so
-# the hook and its 6 settings.json entries are now dead weight -- remove them
-# once this is confirmed. Runs in this pane: when claude exits you are back at
-# your shell. See ~/.config/nono/README.md.
 # Claude Code's built-in tool descriptions bias it hard toward Read/Grep/Bash over
 # Serena's symbol tools. Serena's own fix replaces the system prompt wholesale
 # (`serena prompts print-cc-system-prompt-override`), which drags in its opinions on
 # commits, tone and scope; this appends only the tool-selection half.
-claude() { command claude --append-system-prompt-file ~/.claude/serena-tool-selection.md "$@" }
+#
+# Inside herdr a bare `claude` goes through nono instead: herdr's session restore
+# (`claude --resume <id>`) and `herdr agent start --kind claude` type exactly that
+# into this shell. Not when already sandboxed (nono sets NONO_CAP_FILE; nested
+# nono fails). `command claude` bypasses both. HERDR_CLAUDE_LAUNCHER picks the
+# launcher per machine (set it in ~/.zsh.d); herdr-dispatch uses it too.
+claude() {
+  if [[ ${HERDR_ENV:-} == 1 && -z ${NONO_CAP_FILE:-} ]]; then
+    "${HERDR_CLAUDE_LAUNCHER:-nono-claude-open}" "$@"
+    return
+  fi
+  command claude --append-system-prompt-file ~/.claude/serena-tool-selection.md "$@"
+}
 
+# herdr under nono. nono holds claude on an inner pty, so herdr's process
+# detection sees `nono`, not `claude`; the HERDR_AGENT hint (herdr >= 0.7.5,
+# #679) makes the claude screen manifest run anyway.
+# The socket grant lets the stock herdr claude integration report the session
+# and lets agents watch/prompt other herdr panes (the herdr skill). It is also a
+# way out of the sandbox -- `pane run` spawns outside nono -- accepted
+# deliberately. Runs in this pane: when claude exits you are back at your
+# shell. See ~/.config/nono/README.md.
 _nono-claude() {
   local profile=$1; shift
   local -a herdr_grant proxy_grant ssh_grant env_prefix

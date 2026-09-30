@@ -1,0 +1,124 @@
+#!/usr/bin/env bash
+#
+# herdr-dispatch - start a sandboxed coding agent in a Herdr pane and name it.
+#
+# `herdr agent start --kind KIND` can only type the bare agent command (for
+# claude, the ~/.zshrc function routes that to the default nono launcher). This
+# runs any nono launcher function ($HERDR_CLAUDE_LAUNCHER, else
+# nono-claude-open) in the pane's own interactive zsh, waits for Herdr to detect
+# the agent, then names it so other sessions can target it with
+# `herdr agent prompt|wait|read <name>`.
+#
+# Where the agent goes (default: split next to the calling pane):
+#   --pane ID         an existing pane sitting at a shell prompt
+#                     (e.g. .result.root_pane.pane_id of `herdr tab create`)
+#   --worktree BRANCH new git worktree at <repo>/.worktrees/<branch> in its
+#                     own Herdr workspace
+#   --direction D     split direction, right|down (default: from pane shape)
+#
+# Prints one JSON line: {"name","pane_id","workspace_id","kind","status"}.
+# Exit 3 = agent blocked at startup (trust/approval dialog): inspect it with
+# `herdr agent read <pane>` and let the user decide. See ~/.config/nono/README.md.
+
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'EOF'
+usage: herdr-dispatch NAME [--launcher FN] [--pane ID | --worktree BRANCH | --direction right|down]
+                           [--cwd DIR] [--prompt TEXT] [--focus] [--timeout SECONDS] [-- LAUNCHER_ARGS...]
+EOF
+  exit 2
+}
+
+die() { echo "herdr-dispatch: $*" >&2; exit 1; }
+
+[ "${HERDR_ENV:-}" = 1 ] || die "not running inside a Herdr pane"
+command -v jq >/dev/null || die "jq not found"
+
+[ $# -ge 1 ] || usage
+name=$1; shift
+[[ $name =~ ^[a-z][a-z0-9_-]{0,31}$ ]] || die "invalid name '$name' (want [a-z][a-z0-9_-]{0,31})"
+
+launcher=${HERDR_CLAUDE_LAUNCHER:-nono-claude-open} pane="" worktree="" direction="" cwd="$PWD" prompt="" focus=0 timeout=90
+launcher_args=()
+while [ $# -gt 0 ]; do
+  case $1 in
+    --launcher) launcher=${2:?}; shift 2 ;;
+    --pane) pane=${2:?}; shift 2 ;;
+    --worktree) worktree=${2:?}; shift 2 ;;
+    --direction) direction=${2:?}; shift 2 ;;
+    --cwd) cwd=${2:?}; shift 2 ;;
+    --prompt) prompt=${2:?}; shift 2 ;;
+    --focus) focus=1; shift ;;
+    --timeout) timeout=${2:?}; shift 2 ;;
+    --) shift; launcher_args=("$@"); break ;;
+    *) usage ;;
+  esac
+done
+[ -z "$pane" ] || [ -z "$worktree" ] || die "--pane and --worktree are exclusive"
+
+case $launcher in
+  *codex*) kind=codex ;;
+  *) kind=claude ;;
+esac
+
+focus_flag=--no-focus
+[ "$focus" = 1 ] && focus_flag=--focus
+
+cwd=$(cd "$cwd" && pwd -P) || die "no such directory: $cwd"
+
+if [ -n "$worktree" ]; then
+  top=$(git -C "$cwd" rev-parse --show-toplevel) || die "$cwd is not in a git repository"
+  created=$(herdr worktree create --cwd "$top" --branch "$worktree" \
+    --path "$top/.worktrees/$worktree" --label "$worktree" "$focus_flag")
+  pane=$(jq -r '.result.root_pane.pane_id' <<<"$created")
+elif [ -z "$pane" ]; then
+  if [ -z "$direction" ]; then
+    # Terminal cells are about twice as tall as wide: split wide panes right.
+    direction=$(herdr pane layout --pane "$HERDR_PANE_ID" | jq -r --arg p "$HERDR_PANE_ID" '
+      .result.layout.panes[] | select(.pane_id == $p) | .rect
+      | if .width > 2.5 * .height then "right" else "down" end')
+  fi
+  split=$(herdr pane split --current --direction "$direction" --cwd "$cwd" "$focus_flag")
+  pane=$(jq -r '.result.pane.pane_id' <<<"$split")
+fi
+[ -n "$pane" ] && [ "$pane" != null ] || die "could not get a pane"
+
+info=$(herdr pane get "$pane")
+[ "$(jq -r '.result.pane.agent // empty' <<<"$info")" = "" ] || die "pane $pane already hosts an agent"
+pane_cwd=$(jq -r '.result.pane.cwd' <<<"$info")
+# nono refuses a cwd that overlaps its state root under $HOME.
+[ "$(cd "$pane_cwd" && pwd -P)" != "$(cd "$HOME" && pwd -P)" ] || die "refusing to launch in \$HOME (pane $pane)"
+
+# Typeahead is kept while zsh starts, but wait for the first prompt anyway so
+# the command is not echoed into a half-initialized screen.
+herdr pane wait-output "$pane" --regex '\S' --timeout 15000 >/dev/null || die "pane $pane shows no shell prompt"
+
+cmd=$launcher
+[ ${#launcher_args[@]} -eq 0 ] || cmd+=$(printf ' %q' "${launcher_args[@]}")
+herdr pane run "$pane" "$cmd" >/dev/null
+
+deadline=$((SECONDS + timeout))
+status=""
+while [ $SECONDS -lt $deadline ]; do
+  info=$(herdr pane get "$pane")
+  if [ "$(jq -r '.result.pane.agent // empty' <<<"$info")" = "$kind" ]; then
+    status=$(jq -r '.result.pane.agent_status' <<<"$info")
+    case $status in idle | done | blocked) break ;; esac
+  fi
+  sleep 1
+done
+[ -n "$status" ] || die "no $kind agent detected in pane $pane after ${timeout}s (check: herdr pane read $pane)"
+
+herdr agent rename "$pane" "$name" >/dev/null
+
+if [ "$status" = blocked ]; then
+  echo "herdr-dispatch: $name ($pane) is blocked at startup; inspect: herdr agent read $name" >&2
+elif [ -n "$prompt" ]; then
+  herdr agent prompt "$name" "$prompt" >/dev/null
+fi
+
+jq -cn --arg name "$name" --arg pane "$pane" --arg ws "$(jq -r '.result.pane.workspace_id' <<<"$info")" \
+  --arg kind "$kind" --arg status "$status" \
+  '{name: $name, pane_id: $pane, workspace_id: $ws, kind: $kind, status: $status}'
+[ "$status" != blocked ] || exit 3
