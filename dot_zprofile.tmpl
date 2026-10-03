@@ -1,5 +1,7 @@
 {{ if eq .chezmoi.os "darwin" -}}
 eval "$(/opt/homebrew/bin/brew shellenv)"
+export HOMEBREW_NO_ANALYTICS=1
+export PATH="$HOMEBREW_PREFIX/opt/gnu-getopt/bin:$PATH"
 
 # Added by OrbStack: command-line tools and integration
 # This won't be added again if you remove it.

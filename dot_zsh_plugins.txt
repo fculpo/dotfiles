@@ -6,7 +6,7 @@ confd
 #editor
 environment
 history
-homebrew
+# no homebrew: .zprofile's `brew shellenv` already sets PATH and fpath
 macos
 utility
 zfunctions
@@ -14,25 +14,24 @@ zfunctions
 getantidote/use-omz
 ohmyzsh/ohmyzsh path:lib
 
+# Before mise: it appends its bin dir to $PATH, and any PATH change after mise
+# activates makes the first prompt rerun a full `mise hook-env` (~50ms).
+reegnz/jq-zsh-plugin
+
 using:ohmyzsh/ohmyzsh path:plugins
 # mise first: it activates synchronously and adds mise-managed tools (eza, etc.)
-# to $PATH, so later tool plugins' "command not found" guards pass.
+# to $PATH, so later tool plugins' "command not found" guards pass. Its per-prompt hook only
+# recomputes on cd (hook_env.chpwd_only in ~/.config/mise/config.toml).
+# Tool completions come from mise postinstall hooks, not the omz per-tool plugins
+# (they regenerate on every shell).
 mise
-chezmoi
-common-aliases
 direnv
 extract
 eza
-fluxcd
 fzf
-gcloud
-gh
-gnu-utils
-helm
 kubectl
 magic-enter
 sudo
-uv
 zoxide
 
 ohmyzsh/ohmyzsh path:plugins/pass kind:fpath
@@ -41,10 +40,9 @@ ohmyzsh/ohmyzsh path:plugins/pass kind:fpath
 
 joke/zim-yq
 MichaelAquilina/zsh-you-should-use
-reegnz/jq-zsh-plugin
 wfxr/forgit
 
-romkatv/powerlevel10k kind:fpath
+romkatv/powerlevel10k
 
 zsh-users/zsh-completions path:src kind:fpath
 zsh-users/zsh-autosuggestions kind:defer

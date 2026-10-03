@@ -1,4 +1,7 @@
 [tools]
+# Tools with a `postinstall` write their zsh completion into
+# ~/.local/share/zsh/site-functions (on $fpath via .zshrc). It runs whenever a
+# version is newly installed, so upgrades and fresh machines both get current files.
 "npm:@bitwarden/cli" = "latest"
 "npm:@devcontainers/cli" = "latest"
 "npm:@google/gemini-cli" = "latest"
@@ -7,9 +10,9 @@
 bat = "latest"
 bun = "latest"
 delta = "latest"
-flux2 = "2.6.4"
+flux2 = { version = "2.6.4", postinstall = "flux completion zsh > $HOME/.local/share/zsh/site-functions/_flux" }
 fzf = "latest"
-gh = "latest"
+gh = { version = "latest", postinstall = "gh completion -s zsh > $HOME/.local/share/zsh/site-functions/_gh" }
 git-lfs = "latest"
 github-cli = "latest"
 glab = "latest"
@@ -18,7 +21,7 @@ node = "lts/krypton"
 ripgrep = "latest"
 ruby = "4.0"
 usage = "latest"
-uv = "latest"
+uv = { version = "latest", postinstall = "uv generate-shell-completion zsh > $HOME/.local/share/zsh/site-functions/_uv && uvx --generate-shell-completion zsh > $HOME/.local/share/zsh/site-functions/_uvx" }
 zoxide = "latest"
 direnv = "latest"
 yazi = "latest"
@@ -33,7 +36,7 @@ gitleaks = "latest"
 go-jsonnet = "latest"
 grype = "latest"
 hadolint = "latest"
-helm = "latest"
+helm = { version = "latest", postinstall = "helm completion zsh > $HOME/.local/share/zsh/site-functions/_helm" }
 jq = "latest"
 jb = "latest"
 k6 = "latest"
@@ -48,11 +51,15 @@ markdownlint-cli2 = "latest"
 "github:gastownhall/beads" = "latest"
 azure-kubelogin = "latest"
 azure-cli = { version = "latest", uvx_args = "--prerelease=allow" }
-kubectl = "1.35"
+kubectl = { version = "1.35", postinstall = "kubectl completion zsh > $HOME/.local/share/zsh/site-functions/_kubectl" }
 rclone = "latest"
 rust = "latest"
 
 [settings]
+# Recompute the env only on cd, not on every prompt: a full hook-env costs ~50ms
+# with this many tools. After editing a mise.toml in place, cd or run
+# `mise hook-env --force` to pick it up.
+hook_env.chpwd_only = true
 idiomatic_version_file_enable_tools = ["rust"]
 
 [settings.npm]
