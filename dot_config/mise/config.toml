@@ -60,6 +60,11 @@ rust = "latest"
 # with this many tools. After editing a mise.toml in place, cd or run
 # `mise hook-env --force` to pick it up.
 hook_env.chpwd_only = true
+# Keep the shims dir off PATH in activated shells. With it on, a tool that is
+# installed but not set for the current dir (e.g. ruff) resolves to a shim that
+# errors "No version is set for shim", and editors like Zed that read the login
+# shell's PATH launch that shim instead of falling back to their own binary.
+activate_shims = false
 idiomatic_version_file_enable_tools = ["rust"]
 
 [settings.npm]
