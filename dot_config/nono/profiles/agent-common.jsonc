@@ -17,6 +17,23 @@
   "security": {
     "ipc_mode": "full",
   },
+  // Launch Electron (app e2e, `npx electron`) inside the sandbox. nono has no
+  // typed capability for this (upstream nolabs-ai/nono#1442), so raw Seatbelt:
+  //   - file-issue-extension: Electron hands its own bundle path to helpers at
+  //     startup; denied, it aborts with `sandbox_extension_issue_file_to_process
+  //     failed ... Operation not permitted` then SIGSEGV. An extension can only
+  //     cover paths this sandbox can already read, so it grants nothing new.
+  //   - iokit-open RootDomainUserClient: power-management notification port;
+  //     denied, ElectronMain derefs NULL (IONotificationPortGetRunLoopSource).
+  //   - mach-register for Chromium's port rendezvous only; denied, no helper
+  //     process (GPU, renderer, network) ever starts.
+  // Chromium's own Seatbelt cannot nest inside this one, so Electron must also
+  // run with --no-sandbox (blindtest e2e fixtures add it when NONO_CAP_FILE is set).
+  "unsafe_macos_seatbelt_rules": [
+    "(allow file-issue-extension)",
+    "(allow iokit-open (iokit-user-client-class \"RootDomainUserClient\"))",
+    "(allow mach-register (global-name-regex #\"\\.MachPortRendezvousServer\\.[0-9]+$\"))",
+  ],
   "filesystem": {
     "allow": [
       // The current project, read+write. $WORKDIR expands to the process cwd,
