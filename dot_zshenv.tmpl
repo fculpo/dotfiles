@@ -7,6 +7,8 @@ skip_global_compinit=1
 if [[ -z "$SSH_AUTH_SOCK" && "$OSTYPE" == darwin* ]]; then
     export SSH_AUTH_SOCK=$(launchctl getenv SSH_AUTH_SOCK)
 fi
+# Outside $HOME: cbm validates every cache ancestor, and nono denies /Users and /Users/fabien
+export CBM_CACHE_DIR=/private/tmp/cbm-cache-501
 {{ else if eq .chezmoi.os "linux" -}}
 # Single ssh-agent per user, at a fixed socket path so every shell finds it
 if [[ -z "$SSH_AUTH_SOCK" ]]; then
