@@ -79,3 +79,5 @@ compile = false
 
 [settings.self_update]
 auto = true
+# Take new mise releases right away; tools keep the default 24h delay.
+minimum_release_age = "0s"
