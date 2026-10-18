@@ -53,7 +53,7 @@ azure-kubelogin = "latest"
 azure-cli = { version = "latest", uvx_args = "--prerelease=allow" }
 kubectl = { version = "1.35", postinstall = "kubectl completion zsh > $HOME/.local/share/zsh/site-functions/_kubectl" }
 rclone = "latest"
-rust = "latest"
+rust = "stable"
 
 [env]
 # nono denies ~/Library/Application Support, where `dart mcp-server` builds its app bundle.
