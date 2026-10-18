@@ -211,11 +211,6 @@ export CLAUDE_CONFIG_DIR="$HOME/.claude"
 # `cswap run` session mode -- it does not scrub the var, so profiles would share one store.
 export CLAUDE_SECURESTORAGE_CONFIG_DIR=""
 
-# Claude Code's built-in tool descriptions bias it hard toward Read/Grep/Bash over
-# Serena's symbol tools. Serena's own fix replaces the system prompt wholesale
-# (`serena prompts print-cc-system-prompt-override`), which drags in its opinions on
-# commits, tone and scope; this appends only the tool-selection half.
-#
 # Inside herdr a bare `claude` goes through nono instead: herdr's session restore
 # (`claude --resume <id>`) and `herdr agent start --kind claude` type exactly that
 # into this shell. Not when already sandboxed (nono sets NONO_CAP_FILE; nested
@@ -226,7 +221,7 @@ claude() {
     "${HERDR_CLAUDE_LAUNCHER:-nono-claude-open}" "$@"
     return
   fi
-  command claude --append-system-prompt-file ~/.claude/serena-tool-selection.md "$@"
+  command claude "$@"
 }
 
 # herdr under nono. nono holds claude on an inner pty, so herdr's process
@@ -248,8 +243,7 @@ _nono-claude() {
   [[ "${HERDR_ENV:-}" == 1 ]] && env_prefix=(HERDR_AGENT=claude)
   # No --allow-cwd: the profile grants "$WORKDIR" (the cwd) read+write itself.
   env "${env_prefix[@]}" nono run "${proxy_grant[@]}" "${ssh_grant[@]}" "${herdr_grant[@]}" \
-    --profile "$profile" -- claude --dangerously-skip-permissions \
-    --append-system-prompt-file ~/.claude/serena-tool-selection.md "$@"
+    --profile "$profile" -- claude --dangerously-skip-permissions "$@"
 }
 
 nono-claude() { _nono-claude claude-code-hardened "$@" }
