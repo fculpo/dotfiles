@@ -6,13 +6,18 @@
 sudo apt update -y
 sudo apt install --no-install-recommends -y curl git git-lfs vim gpg zsh
 
+{{ else if eq .osid "linux-arch" -}}
+sudo pacman -S --needed --noconfirm curl git git-lfs vim gnupg zsh
+
+{{ else if eq .osid "darwin" -}}
+
+{{ end -}}
+
+{{ if and (eq .chezmoi.os "linux") (not (get . "minimal")) -}}
 # Install mise - https://mise.jdx.dev/installing-mise.html
 # Not a chezmoi external: externals are materialized after .chezmoiscripts run,
 # so `mise install` below would not find the binary yet.
 curl -fsSL https://mise.run | sh
-
-{{ else if eq .osid "darwin" -}}
-
 {{ end -}}
 
 # `mise install` runs from run_onchange_after_mise-install.sh, once the global

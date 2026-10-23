@@ -1,2 +1,17 @@
 install.sh
 docs
+
+{{ if get . "minimal" -}}
+.agents
+.claude
+.config/aerospace
+.config/cmux
+.config/ghostty
+.config/mise
+.config/nono
+.config/wezterm
+.local/bin
+.zsh-patina
+.chezmoiscripts/mise-install.sh
+.chezmoiscripts/zsh-patina-build.sh
+{{ end -}}
