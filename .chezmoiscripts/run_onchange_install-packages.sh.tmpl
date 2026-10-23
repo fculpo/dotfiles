@@ -7,7 +7,7 @@ sudo apt update -y
 sudo apt install --no-install-recommends -y curl git git-lfs vim gpg zsh
 
 {{ else if eq .osid "linux-arch" -}}
-sudo pacman -S --needed --noconfirm curl git git-lfs vim gnupg zsh
+sudo pacman -S --needed --noconfirm curl git git-lfs vim gnupg zsh direnv eza fzf zoxide
 
 {{ else if eq .osid "darwin" -}}
 
