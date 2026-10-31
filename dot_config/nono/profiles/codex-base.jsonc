@@ -7,7 +7,7 @@
   // non-empty allow_domain turns on the default-deny proxy and children can
   // never remove an inherited one, so "open" must be a sibling of "hardened".
   "extends": [
-    "codex",
+    "nolabs-ai/codex",
     "agent-common"
   ],
   "meta": {

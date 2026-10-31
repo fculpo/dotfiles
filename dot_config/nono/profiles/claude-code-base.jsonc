@@ -11,7 +11,7 @@
   // allow_domain turns on the default-deny proxy. So "open" cannot be expressed as a
   // child of "hardened" -- it has to be a sibling that never inherits the filter.
   "extends": [
-    "claude-code",
+    "nolabs-ai/claude",
     "agent-common"
   ],
   "meta": {

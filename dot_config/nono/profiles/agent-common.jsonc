@@ -1,7 +1,7 @@
 {
   // Agent-agnostic sandbox grants, shared by claude-code-base and codex-base.
   // Deliberately no "extends": this is a mixin. Both consumers list it as a
-  // second parent (e.g. "extends": ["codex", "agent-common"]) so the agent's own
+  // second parent (e.g. "extends": ["nolabs-ai/codex", "agent-common"]) so the agent's own
   // package profile stays the first base and this one only widens it.
   //
   // Deliberately no allow_domain either: any non-empty allow_domain turns on
