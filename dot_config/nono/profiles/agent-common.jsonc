@@ -44,6 +44,7 @@
       // Still cd into a project first: from a parent dir this grants that whole
       // tree (and $HOME is refused anyway -- it overlaps ~/.local/state/nono).
       "$WORKDIR",
+      "$HOME/.actions-runner",
       "$HOME/.android",
       "$HOME/.ansible",
       "$HOME/.antidote",
