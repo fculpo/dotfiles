@@ -50,7 +50,7 @@ nono = "latest"
 markdownlint-cli2 = "latest"
 "github:gastownhall/beads" = "latest"
 azure-kubelogin = "latest"
-azure-cli = { version = "latest", uvx_args = "--prerelease=allow" }
+azure-cli = "latest"
 kubectl = { version = "1.35", postinstall = "kubectl completion zsh > $HOME/.local/share/zsh/site-functions/_kubectl" }
 rclone = "latest"
 rust = "stable"
