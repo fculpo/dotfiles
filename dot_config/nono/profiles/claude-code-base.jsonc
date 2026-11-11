@@ -39,7 +39,7 @@
       // "use the default store" signal (2.1.278 `qS`/`bO`), and it moves ONLY the
       // credential lookup: .claude.json stays at $HOME/.claude/.claude.json.
       "CLAUDE_SECURESTORAGE_CONFIG_DIR": "",
-      // Both of the next two exist only because ANTHROPIC_BASE_URL below points
+      // The next two exist only because ANTHROPIC_BASE_URL below points
       // at headroom. Any custom base URL breaks them; headroom's own `wrap`
       // papers over both (--tool-search, --1m), but we set the base URL here
       // rather than via wrap, so we own the fixes.
@@ -48,14 +48,13 @@
       // base URL and materializes all of them, inflating context by tens of K
       // tokens -- cancelling much of what the proxy saves (headroom #746).
       "ENABLE_TOOL_SEARCH": "true",
-      // Claude Code only sends the context-1m beta header when the model id
-      // carries the [1m] suffix, and behind a custom base URL the /model picker
-      // selection does not survive -- so it silently caps at 200k
-      // (headroom #1158). The suffix is what triggers the header; the model name
-      // is just whichever one you want as default.
-      // Trade-off: this pins the default model, so update it when you move on
-      // from Opus 5.
-      "ANTHROPIC_MODEL": "claude-opus-5-5[1m]",
+      // Without this, a custom base URL makes /model skip the published catalog
+      // and list stale server options (Fable 5.1 instead of 5.2), and the picker
+      // selection does not survive. With it, settings.json `model` applies and
+      // gets the 1M window (checked on 2.1.322), so ANTHROPIC_MODEL[1m] is no
+      // longer pinned here (headroom #1158). Internal underscore var: if it
+      // stops working after an update, restore ANTHROPIC_MODEL with [1m].
+      "_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL": "1",
       "ANTHROPIC_BASE_URL": "http://localhost:8787"
     }
   },
