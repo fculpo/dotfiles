@@ -45,6 +45,7 @@
       // tree (and $HOME is refused anyway -- it overlaps ~/.local/state/nono).
       "$WORKDIR",
       "$HOME/.actions-runner",
+      "$HOME/.agent-browser",
       "$HOME/.android",
       "$HOME/.ansible",
       "$HOME/.antidote",
@@ -80,6 +81,7 @@
       "$HOME/Library/Developer/Xcode",
       "$HOME/esp/esp-idf",
       "$HOME/go/pkg",
+      "$HOME/PERSO",
       "$HOME/workspace",
     ],
     "read": [
