@@ -7,10 +7,11 @@ XDG_DATA_HOME="$HOME/.local/share"
 XDG_CACHE_HOME="$HOME/.cache"
 
 # Base PATH: personal bin dirs + dedupe. Set early so mise (loaded later)
-# prepends itself in front — stable order, no bottom-of-file race.
+# prepends itself in front — stable order, no bottom-of-file race. Add PATH entries
+# here, not in ~/.zsh.d: a PATH change after mise activates reruns hook-env (~30ms).
 # typeset -U keeps the first occurrence of each entry (no duplicates).
 typeset -U path PATH
-path=("$HOME/.local/bin" "$HOME/go/bin" $path)
+path=("$HOME/.bun/bin" "$HOME/.local/bin" "$HOME/go/bin" $path)
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
